@@ -3,7 +3,9 @@ package com.bbs.common;
 import com.bbs.exception.ErrorCode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import javax.validation.ConstraintViolation;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.validation.BindingResult;
@@ -73,6 +75,17 @@ public class ErrorResponse {
 	}
 
 	/**
+	 * ErrorCode 와 constraintViolationSe 를 받아 api 응답 포맷에 맞게 ErrorResponse 생성하여 반환
+	 *
+	 * @param errorCode 에러의 status, code, message 를 정의하고 있는 enum
+	 * @param constraintViolationSet 제약 검사 실패 정보
+	 * @return ErrorResponse
+	 */
+	public static ErrorResponse of(ErrorCode errorCode, Set<ConstraintViolation<?>> constraintViolationSet) {
+		return new ErrorResponse(errorCode, FieldError.of(constraintViolationSet));
+	}
+
+	/**
 	 * api 응답 포맷에 맞게 ErrorResponse 생성하여 반환 (일반 에러 응답, "errors" 는 빈 배열로 반환)
 	 *
 	 * @param errorCode 에러의 status, code, message 를 정의하고 있는 enum
@@ -124,6 +137,21 @@ public class ErrorResponse {
 					error.getField(),
 					error.getRejectedValue() == null ? "" : error.getRejectedValue().toString(),
 					error.getDefaultMessage()))
+				.collect(Collectors.toList());
+		}
+
+		/**
+		 * constraintViolationSet 객체에서 실패 정보를 가져와 재정의된 ErrorResponses.FieldError 필드에 맞추어 반환
+		 *
+		 * @param constraintViolationSet 입력/요청값 검증 오류에 대한 정보
+		 * @return ErrorResponse.FieldError 목록
+		 */
+		private static List<FieldError> of(Set<ConstraintViolation<?>> constraintViolationSet) {
+			return constraintViolationSet.stream()
+				.map(error -> new FieldError(
+					error.getPropertyPath().toString().split("\\.")[1],
+					error.getInvalidValue() == null ? "" : error.getInvalidValue().toString(),
+					error.getMessage()))
 				.collect(Collectors.toList());
 		}
 	}

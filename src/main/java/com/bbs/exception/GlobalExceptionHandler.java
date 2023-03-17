@@ -2,6 +2,7 @@ package com.bbs.exception;
 
 import com.bbs.common.ApiResponse;
 import com.bbs.common.ErrorResponse;
+import javax.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,6 +15,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+	/**
+	 * 제약 조건 위배 시 발생 (유효성 검사 실패)
+	 *
+	 * @param exception ConstraintViolationException
+	 * @return ApiResponse.error(errorResponse)
+	 */
+	@ExceptionHandler(ConstraintViolationException.class)
+	protected ApiResponse handleConstraintViolationException(ConstraintViolationException exception) {
+		log.error("ConstraintViolationException", exception.getConstraintViolations());
+		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_PATH_VALUE, exception.getConstraintViolations());
+		return ApiResponse.error(errorResponse);
+	}
 
 	/**
 	 * 클라이언트에서 보내온 Body 가 JSON 으로 변환 실패 시 발생
