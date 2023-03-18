@@ -39,7 +39,7 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	protected ApiResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
-		log.error("MethodArgumentNotValidException", exception);
+		log.error("MethodArgumentNotValidException : {}", exception);
 		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, exception.getBindingResult());
 		return ApiResponse.error(errorResponse);
 	}
@@ -77,7 +77,8 @@ public class GlobalExceptionHandler {
 	 * @return ApiResponse.error(errorResponse)
 	 */
 	@ExceptionHandler({CustomException.class})
-	protected ApiResponse handleBusinessException(CustomException exception) {
+	protected ApiResponse handleCustomApiException(CustomException exception) {
+		log.error("CustomException", exception);
 		ErrorCode errorCode = exception.getErrorCode();
 		ErrorResponse errorResponse = ErrorResponse.of(errorCode);
 		return ApiResponse.error(errorResponse);
@@ -90,7 +91,8 @@ public class GlobalExceptionHandler {
 	 * @return ApiResponse.error(errorResponse)
 	 */
 	@ExceptionHandler({Exception.class})
-	protected ApiResponse handleCustomApiException(Exception exception) {
+	protected ApiResponse handleException(Exception exception) {
+		log.error("Exception", exception);
 		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
 		return ApiResponse.error(errorResponse);
 	}

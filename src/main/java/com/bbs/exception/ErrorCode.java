@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum ErrorCode {
 
+	DATA_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "C003", "요청한 정보가 존재하지 않습니다."),
+	INVALID_PATH_VALUE(HttpStatus.BAD_REQUEST.value(),"C002","잘못된 경로값"),
 	INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST.value(),"C001","잘못된 입력값"),
 
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR.value(),"S001","서버에러");

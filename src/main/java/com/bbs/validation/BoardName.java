@@ -12,7 +12,7 @@ import javax.validation.Constraint;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = BoardNameValidator.class)
-public @interface ValidBoardName {
+public @interface BoardName {
 
 	/**
 	 * @return api 실패 응답 "errors" 에 표시될 message ("reason")
