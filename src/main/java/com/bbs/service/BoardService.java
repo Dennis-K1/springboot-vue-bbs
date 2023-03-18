@@ -1,6 +1,11 @@
 package com.bbs.service;
 
+import com.bbs.domain.Article;
+import com.bbs.domain.PageParameters;
+import com.bbs.domain.User;
+import com.bbs.exception.ArticleNotFoundException;
 import com.bbs.mapper.BoardMapper;
+import com.bbs.mapper.UserMapper;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,8 +22,120 @@ public class BoardService {
 	 */
 	private final BoardMapper boardMapper;
 
+	/**
+	 * 유저 매퍼 (사용자)
+	 */
+	private final UserMapper userMapper;
 
-	public List<String> getArticleList() {
-		return boardMapper.getArticleList();
+
+	public List<Article> getArticleList(PageParameters pageParameters) {
+		return boardMapper.getArticleList(pageParameters);
 	}
+
+	/**
+	 * 검색 조건 기반 총 게시글 갯수 조회
+	 *
+	 * @param pageParameters 검색 조건
+	 * @return
+	 */
+	public int getNumberOfArticlesBySearch(PageParameters pageParameters) {
+		return boardMapper.getNumberOfArticlesBySearch(pageParameters);
+	}
+
+	/**
+	 * 대상 게시글 삭제 (삭제 처리, 삭제일 업데이트)
+	 *
+	 * @param id 대상 게시글 번호
+	 * @return
+	 */
+	public int deleteArticleById(Long id) {
+		if (boardMapper.deleteArticleById(id) == 1) {
+			return boardMapper.updateDateDeleted(id);
+		}
+		Article article = boardMapper.getArticleById(id);
+		return userMapper.decreaseArticleCountById(article.getUser().getId());
+	}
+
+	/**
+	 * 게시글 등록 (회원 아이디 조회, 게시글 등록) -- 등록 시 유저 count_article (게시 게시글 수) 증가
+	 *
+	 * @param article 게시글 정보 객체
+	 * @return
+	 */
+	public int inputArticle(Article article) {
+
+		User user = userMapper.getUserByAccount(article.getUser().getAccount());
+		userMapper.increaseArticleCountById(user.getId());
+
+		article.setUser(user);
+		return boardMapper.inputArticle(article);
+	}
+
+	/**
+	 * 게시글 조회
+	 *
+	 * @param id 대상 게시글 번호
+	 * @return
+	 */
+	public Article getArticleById(Long id) {
+		Article article = boardMapper.getArticleById(id);
+		if (article == null) {
+			throw new ArticleNotFoundException(id);
+		}
+		return article;
+	}
+
+	/**
+	 * 게시글 조회수 증가
+	 *
+	 * @param id 대상 게시글
+	 * @return
+	 */
+	public int increaseArticleViewsById(Long id) {
+		return boardMapper.increaseArticleViewsById(id);
+	}
+
+	/**
+	 * 게시글 수정
+	 *
+	 * @param article 수정할 정보 및 대상 게시글 번호가 든 객체
+	 * @return
+	 */
+	public int editArticle(Article article) {
+		return boardMapper.editArticle(article);
+	}
+
+	/**
+	 * 대상 사용자가 작성한 게시글 목록 반환
+	 *
+	 * @param user 대상 사용자 정보 객체
+	 * @return
+	 */
+	public List<Article> getArticleListByUser(User user) {
+		return boardMapper.getArticleListByUser(user);
+	}
+
+//	/**
+//	 * 답글(댓글) 등록
+//	 *
+//	 * @param reply 답글(댓글) 정보 객체
+//	 * @return
+//	 */
+//	public int inputReply(Reply reply) {
+//			User user = userMapper.getUserByAccount(reply.getUser().getAccount());
+//			reply.setUser(user);
+//			return boardMapper.inputReply(reply);
+//	}
+
+	/**
+	 * 대상 답글(댓글) 삭제
+	 *
+	 * @param replyId 대상 답글(댓글) 번호
+	 * @return
+	 */
+	public int deleteReplyById(Long replyId) {
+		return boardMapper.deleteReplyById(replyId);
+	}
+
+
 }

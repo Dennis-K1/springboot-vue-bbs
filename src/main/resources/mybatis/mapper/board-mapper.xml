@@ -4,355 +4,326 @@
 
 <mapper namespace="com.bbs.mapper.BoardMapper">
 
-  <select id="getArticleList" resultType="string">
+<!--  유저, 답글 정보가 담긴 게시글 정보 객체  -->
+  <resultMap id="articleResultMap" type="com.bbs.domain.Article">
+    <id column="id" property="id"/>
+    <association property="user" column="user_id" select="com.bbs.mapper.UserMapper.getUserById"/>
+    <collection property="replyList" column="id" javaType="java.util.ArrayList" ofType="com.bbs.domain.Reply" select="getReplyListById"/>
+  </resultMap>
+
+<!--  유저 정보가 담긴 댓글 정보 객체  -->
+  <resultMap id="replyResultMap" type="com.bbs.domain.Reply">
+    <id column="id" property="id"/>
+    <association property="user" column="user_id" select="com.bbs.mapper.UserMapper.getUserById"/>
+    <collection property="nestedReplyList" column="{id=id, article_id=article_id}" javaType="java.util.ArrayList" ofType="com.bbs.domain.NestedReply" select="getNestedReplyListById"/>
+  </resultMap>
+
+
+<!--  게시판 최근 게시글 각 3개-->
+  <select id="getTop3RecentArticlesByEachBoard" resultType="com.bbs.domain.Article">
+    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 1 ORDER BY date_registered LIMIT 3)
+    UNION ALL
+    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 2 ORDER BY date_registered LIMIT 3)
+    UNION ALL
+    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 3 ORDER BY date_registered LIMIT 3)
+    UNION ALL
+    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 4 ORDER BY date_registered LIMIT 3)
+  </select>
+
+
+<!--  조회수 top5 게시글 목록 -->
+  <select id="getTop5ViewsArticles" resultType="com.bbs.domain.Article">
+    SELECT
+        article.*,
+        board_category.name AS boardName
+    FROM
+        article
+         INNER JOIN
+            board_category
+            ON article.board_id = board_category.id
+    WHERE
+        article_deleted = 0
+        ORDER BY
+            views DESC
+            LIMIT 5
+  </select>
+
+<!-- 답변 안된 1:1문의글 갯수 -->
+  <select id="getNumberOfPendingInquiries" resultType="integer">
+    SELECT
+        COUNT(*) as count
+    FROM
+        article
+        LEFT OUTER JOIN
+            reply
+            ON article.id = reply.article_id
+    WHERE
+        article_deleted = 0 AND board_id = 3 AND reply.id IS NULL
+  </select>
+
+<!--  댓글 삭제 처리-->
+  <update id="deleteReplyById" parameterType="long">
+    UPDATE
+        reply
+    SET
+        reply_deleted = 1
+    WHERE
+        id = #{value}
+  </update>
+
+  <!--  대댓글 (원댓글의 댓글) 목록 조회 -->
+  <select id="getNestedReplyListById" parameterType="java.util.Map" resultType="com.bbs.domain.NestedReply">
+    SELECT
+      reply.*, user.account as account
+    FROM
+      reply
+      INNER JOIN user ON user_id = user.id
+    WHERE
+      article_id = #{article_id} AND reply_id = #{id}
+  </select>
+
+<!--  원댓글 목록 조회 -->
+  <select id="getReplyListById" parameterType="long" resultMap="replyResultMap">
+    SELECT
+        *
+    FROM
+        reply
+    WHERE
+        article_id = #{value} AND reply_id IS NULL
+  </select>
+
+  <!--  댓글 조회 -->
+  <select id="getReplyById" parameterType="long" resultType="com.bbs.domain.Reply">
+    SELECT
+      *
+    FROM
+      reply
+    WHERE
+      id = #{value}
+  </select>
+
+  <!-- 검색 키워드 및 대상 게시판 기반 총 게시글 수 반환-->
+  <select id="getNumberOfArticlesBySearch" resultType="int" parameterType="com.bbs.domain.PageParameters">
+    SELECT
+          COUNT(*)
+    FROM
+          article
+          INNER JOIN
+              user ON article.user_id = user.id
+    WHERE
+          board_id = #{boardId}
+          AND article_deleted = 0
+          <include refid="searchParameters"/>
+  </select>
+
+  <!--  페이지 번호 및 검색 키워드 기반 유저 리스트 반환 *** 최대 10개까지 ***
+        ** 파일 테이블에 각 게시글에 종속된 파일이 없을 경우 Article VO의 fileAttached 필드 false 처리 -->
+  <select id="getArticleList" resultMap="articleResultMap" parameterType="com.bbs.domain.PageParameters">
+    SELECT
+        article.*,
+        IFNULL(file.id, FALSE) AS fileAttached,
+        user.account as account
+    FROM
+        article
+        LEFT OUTER JOIN
+            file ON article.id = file.article_id
+        INNER JOIN
+            user ON article.user_id = user.id
+    WHERE
+        board_id = #{boardId}
+        AND article_deleted = 0
+        <include refid="searchParameters"/>
+        ORDER BY article.id DESC
+        LIMIT 10
+        OFFSET
+            #{pageNumberOffset}
+  </select>
+
+  <!--  id(PK)에 해당하는 게시글 삭제 처리-->
+  <update id="deleteArticleById" parameterType="long">
+    UPDATE
+      article
+    SET
+      article_deleted = 1
+    WHERE
+      id = #{value}
+  </update>
+
+  <!--  게시글 삭제일 갱신 -->
+  <update id="updateDateDeleted" parameterType="long">
+    UPDATE
+      article
+    SET
+      date_deleted = CURRENT_TIMESTAMP()
+    WHERE
+      id = #{value}
+  </update>
+
+  <!--  id(PK)에 해당하는 게시글 복구 -->
+  <update id="recoverArticleById" parameterType="long">
+    UPDATE
+      article
+    SET
+      article_deleted = 0
+    WHERE
+      id = #{value}
+  </update>
+
+  <!--  게시글 삭제일 복구 -->
+  <update id="recoverDateDeleted" parameterType="long">
+    UPDATE
+      article
+    SET
+      date_deleted = NULL
+    WHERE
+      id = #{value}
+  </update>
+
+  <!--  게시글 등록   -->
+  <insert id="inputArticle" parameterType="com.bbs.domain.Article">
+    INSERT INTO
+        article
+            (board_id,
+             user_id,
+             title,
+             content)
+    VALUES
+            (#{boardId},
+            #{user.id},
+            #{title},
+            #{content})
+    <selectKey keyProperty="id" resultType="long">
+        SELECT LAST_INSERT_ID()
+    </selectKey>
+  </insert>
+
+  <!-- 답글(댓글) 등록, 프론트에서 replyId (댓글 PK) 를 함께 보냈을 경우 대댓글로 등록 -->
+  <insert id="inputReply" parameterType="com.bbs.domain.Reply">
+    <choose>
+      <when test="replyId != null">
+        INSERT INTO
+            reply
+              (article_id,
+               user_id,
+               content,
+               reply_id)
+        VALUES
+              (#{articleId},
+               #{user.id},
+               #{content},
+               #{replyId})
+      </when>
+      <otherwise>
+        INSERT INTO
+            reply
+                (article_id,
+                 user_id,
+                 content)
+        VALUES
+                (#{articleId},
+                 #{user.id},
+                 #{content})
+      </otherwise>
+    </choose>
+  </insert>
+
+  <!--  유저 아이디로 유저 조회 -->
+  <select id="getArticleById" parameterType="long" resultMap="articleResultMap">
+    SELECT
+      *
+    FROM
+      article
+    WHERE
+      id = #{value}
+  </select>
+
+<!--  해당 유저가 작성한 게시글 목록 반환 -->
+  <select id="getArticleListByUser" resultType="com.bbs.domain.Article" parameterType="com.bbs.domain.User">
     SELECT
         *
     FROM
         article
-    LIMIT 10
+    WHERE
+        user_id = #{id}
   </select>
-<!--&lt;!&ndash;  유저, 답글 정보가 담긴 게시글 정보 객체  &ndash;&gt;-->
-<!--  <resultMap id="articleResultMap" type="com.bbs.domain.Article">-->
-<!--    <id column="id" property="id"/>-->
-<!--    <association property="user" column="user_id" select="com.bbs.mapper.UserMapper.getUserById"/>-->
-<!--    <collection property="replyList" column="id" javaType="java.util.ArrayList" ofType="com.bbs.domain.Reply" select="getReplyListById"/>-->
-<!--  </resultMap>-->
 
-<!--&lt;!&ndash;  유저 정보가 담긴 댓글 정보 객체  &ndash;&gt;-->
-<!--  <resultMap id="replyResultMap" type="com.bbs.domain.Reply">-->
-<!--    <id column="id" property="id"></id>-->
-<!--    <association property="user" column="user_id" select="com.bbs.mapper.UserMapper.getUserById"/>-->
-<!--    <collection property="nestedReplyList" column="{id=id, article_id=article_id}" javaType="java.util.ArrayList" ofType="com.bbs.domain.NestedReply" select="getNestedReplyListById"/>-->
-<!--  </resultMap>-->
+<!--  해당 게시글의 게시판 번호 조회 -->
+  <select id="getBoardIdById" parameterType="long" resultType="java.lang.Long">
+    SELECT
+        board_id
+    FROM
+        article
+    WHERE
+        id = #{value}
+  </select>
 
-<!--&lt;!&ndash;  어드민 인덱스 대시보드 정보 객체&ndash;&gt;-->
-<!--  <resultMap id="adminDashboard" type="com.bbs.domain.AdminDashboard">-->
-<!--    <association property="numberOfActiveUsers" column="id" select="com.bbs.mapper.UserMapper.getNumberOfActiveUsers"/>-->
-<!--    <association property="numberOfPendingInquiries"  column="id" select="getNumberOfPendingInquiries"/>-->
-<!--    <collection property="top5ViewsArticles" column="id" javaType="java.util.ArrayList" ofType="com.bbs.domain.Article" select="getTop5ViewsArticles"/>-->
-<!--    <collection property="top3RecentArticlesByEachBoard" column="id" javaType="java.util.ArrayList" ofType="com.bbs.domain.Article" select="getTop3RecentArticlesByEachBoard"/>-->
-<!--  </resultMap>-->
-
-
-<!--&lt;!&ndash;  각 게시판 활성 상태 게시글 수 조회하면서 adminDashboard resultMap 조회&ndash;&gt;-->
-<!--  <select id="getAdminDashboardResultMap" resultMap="adminDashboard">-->
-<!--    SELECT-->
-<!--        *,-->
-<!--      COUNT(CASE WHEN board_id = 1 THEN 1 END) AS numberOfActiveNoticeArticles,-->
-<!--      COUNT(CASE WHEN board_id = 2 THEN 1 END) AS numberOfActiveCommunityArticles,-->
-<!--      COUNT(CASE WHEN board_id = 3 THEN 1 END) AS numberOfActiveInquiryArticles,-->
-<!--      COUNT(CASE WHEN board_id = 4 THEN 1 END) AS numberOfActiveGalleryArticles-->
-<!--    FROM-->
-<!--        article-->
-<!--    WHERE-->
-<!--        article_deleted = 0;-->
-<!--  </select>-->
-<!--  -->
-<!--  -->
-<!--&lt;!&ndash;  게시판 최근 게시글 각 3개&ndash;&gt;-->
-<!--  <select id="getTop3RecentArticlesByEachBoard" resultType="com.bbs.domain.Article">-->
-<!--    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 1 ORDER BY date_registered LIMIT 3)-->
-<!--    UNION ALL-->
-<!--    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 2 ORDER BY date_registered LIMIT 3)-->
-<!--    UNION ALL-->
-<!--    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 3 ORDER BY date_registered LIMIT 3)-->
-<!--    UNION ALL-->
-<!--    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 4 ORDER BY date_registered LIMIT 3)-->
-<!--  </select>-->
+  <!--  대상 게시글 조회수 증가 -->
+  <update id="increaseArticleViewsById" parameterType="long">
+    UPDATE
+        article
+    SET
+        views = views + 1
+    WHERE
+        id = #{value}
+  </update>
 
 
-<!--&lt;!&ndash;  조회수 top5 게시글 목록 &ndash;&gt;-->
-<!--  <select id="getTop5ViewsArticles" resultType="com.bbs.domain.Article">-->
-<!--    SELECT-->
-<!--        article.*,-->
-<!--        board_category.name AS boardName-->
-<!--    FROM-->
-<!--        article-->
-<!--         INNER JOIN-->
-<!--            board_category-->
-<!--            ON article.board_id = board_category.id-->
-<!--    WHERE-->
-<!--        article_deleted = 0-->
-<!--        ORDER BY-->
-<!--            views DESC-->
-<!--            LIMIT 5-->
-<!--  </select>-->
+  <!--  게시물 수정 -->
+  <update id="editArticle" parameterType="com.bbs.domain.Article">
+    UPDATE
+        article
+    SET
+        title = #{title},
+        content = #{content},
+        last_updated = CURRENT_TIMESTAMP()
+    WHERE
+        id = #{id}
+  </update>
 
-<!--&lt;!&ndash; 답변 안된 1:1문의글 갯수 &ndash;&gt;-->
-<!--  <select id="getNumberOfPendingInquiries" resultType="integer">-->
-<!--    SELECT-->
-<!--        COUNT(*) as count-->
-<!--    FROM-->
-<!--        article-->
-<!--        LEFT OUTER JOIN-->
-<!--            reply-->
-<!--            ON article.id = reply.article_id-->
-<!--    WHERE-->
-<!--        article_deleted = 0 AND board_id = 3 AND reply.id IS NULL-->
-<!--  </select>-->
-
-<!--&lt;!&ndash;  댓글 삭제 처리&ndash;&gt;-->
-<!--  <update id="deleteReplyById" parameterType="long">-->
-<!--    UPDATE-->
-<!--        reply-->
-<!--    SET-->
-<!--        reply_deleted = 1-->
-<!--    WHERE-->
-<!--        id = #{value}-->
-<!--  </update>-->
-
-<!--  &lt;!&ndash;  대댓글 (원댓글의 댓글) 목록 조회 &ndash;&gt;-->
-<!--  <select id="getNestedReplyListById" parameterType="java.util.Map" resultType="com.bbs.domain.NestedReply">-->
-<!--    SELECT-->
-<!--      reply.*, user.account as account-->
-<!--    FROM-->
-<!--      reply-->
-<!--      INNER JOIN user ON user_id = user.id-->
-<!--    WHERE-->
-<!--      article_id = #{article_id} AND reply_id = #{id}-->
-<!--  </select>-->
-
-<!--&lt;!&ndash;  원댓글 목록 조회 &ndash;&gt;-->
-<!--  <select id="getReplyListById" parameterType="long" resultMap="replyResultMap">-->
-<!--    SELECT-->
-<!--        *-->
-<!--    FROM-->
-<!--        reply-->
-<!--    WHERE-->
-<!--        article_id = #{value} AND reply_id IS NULL-->
-<!--  </select>-->
-
-<!--  &lt;!&ndash;  댓글 조회 &ndash;&gt;-->
-<!--  <select id="getReplyById" parameterType="long" resultType="com.bbs.domain.Reply">-->
-<!--    SELECT-->
-<!--      *-->
-<!--    FROM-->
-<!--      reply-->
-<!--    WHERE-->
-<!--      id = #{value}-->
-<!--  </select>-->
-
-<!--  &lt;!&ndash; 검색 키워드 및 대상 게시판 기반 총 게시글 수 반환&ndash;&gt;-->
-<!--  <select id="getNumberOfArticlesBySearch" resultType="int" parameterType="com.bbs.domain.PageParameters">-->
-<!--    SELECT-->
-<!--          COUNT(*)-->
-<!--    FROM-->
-<!--          article-->
-<!--          INNER JOIN-->
-<!--              user ON article.user_id = user.id-->
-<!--    WHERE-->
-<!--          board_id = #{boardId}-->
-<!--          AND article_deleted = 0-->
-<!--          <include refid="searchParameters"/>-->
-<!--  </select>-->
-
-<!--  &lt;!&ndash;  페이지 번호 및 검색 키워드 기반 유저 리스트 반환 *** 최대 10개까지 ***-->
-<!--        ** 파일 테이블에 각 게시글에 종속된 파일이 없을 경우 Article VO의 fileAttached 필드 false 처리 &ndash;&gt;-->
-<!--  <select id="getArticleList" resultMap="articleResultMap" parameterType="com.bbs.domain.PageParameters">-->
-<!--    SELECT-->
-<!--        article.*,-->
-<!--        IFNULL(file.id, FALSE) AS fileAttached,-->
-<!--        user.account as account-->
-<!--    FROM-->
-<!--        article-->
-<!--        LEFT OUTER JOIN-->
-<!--            file ON article.id = file.article_id-->
-<!--        INNER JOIN-->
-<!--            user ON article.user_id = user.id-->
-<!--    WHERE-->
-<!--        board_id = #{boardId}-->
-<!--        AND article_deleted = 0-->
-<!--        <include refid="searchParameters"/>-->
-<!--        ORDER BY article.id DESC-->
-<!--        LIMIT 10-->
-<!--        OFFSET-->
-<!--            #{pageNumberOffset}-->
-<!--  </select>-->
-
-<!--  &lt;!&ndash;  id(PK)에 해당하는 게시글 삭제 처리&ndash;&gt;-->
-<!--  <update id="deleteArticleById" parameterType="long">-->
-<!--    UPDATE-->
-<!--      article-->
-<!--    SET-->
-<!--      article_deleted = 1-->
-<!--    WHERE-->
-<!--      id = #{value}-->
-<!--  </update>-->
-
-<!--  &lt;!&ndash;  게시글 삭제일 갱신 &ndash;&gt;-->
-<!--  <update id="updateDateDeleted" parameterType="long">-->
-<!--    UPDATE-->
-<!--      article-->
-<!--    SET-->
-<!--      date_deleted = CURRENT_TIMESTAMP()-->
-<!--    WHERE-->
-<!--      id = #{value}-->
-<!--  </update>-->
-
-<!--  &lt;!&ndash;  id(PK)에 해당하는 게시글 복구 &ndash;&gt;-->
-<!--  <update id="recoverArticleById" parameterType="long">-->
-<!--    UPDATE-->
-<!--      article-->
-<!--    SET-->
-<!--      article_deleted = 0-->
-<!--    WHERE-->
-<!--      id = #{value}-->
-<!--  </update>-->
-
-<!--  &lt;!&ndash;  게시글 삭제일 복구 &ndash;&gt;-->
-<!--  <update id="recoverDateDeleted" parameterType="long">-->
-<!--    UPDATE-->
-<!--      article-->
-<!--    SET-->
-<!--      date_deleted = NULL-->
-<!--    WHERE-->
-<!--      id = #{value}-->
-<!--  </update>-->
-
-<!--  &lt;!&ndash;  게시글 등록   &ndash;&gt;-->
-<!--  <insert id="inputArticle" parameterType="com.bbs.domain.Article">-->
-<!--    INSERT INTO-->
-<!--        article-->
-<!--            (board_id,-->
-<!--             user_id,-->
-<!--             title,-->
-<!--             content)-->
-<!--    VALUES-->
-<!--            (#{boardId},-->
-<!--            #{user.id},-->
-<!--            #{title},-->
-<!--            #{content})-->
-<!--    <selectKey keyProperty="id" resultType="long">-->
-<!--        SELECT LAST_INSERT_ID()-->
-<!--    </selectKey>-->
-<!--  </insert>-->
-
-<!--  &lt;!&ndash; 답글(댓글) 등록, 프론트에서 replyId (댓글 PK) 를 함께 보냈을 경우 대댓글로 등록 &ndash;&gt;-->
-<!--  <insert id="inputReply" parameterType="com.bbs.domain.Reply">-->
-<!--    <choose>-->
-<!--      <when test="replyId != null">-->
-<!--        INSERT INTO-->
-<!--            reply-->
-<!--              (article_id,-->
-<!--               user_id,-->
-<!--               content,-->
-<!--               reply_id)-->
-<!--        VALUES-->
-<!--              (#{articleId},-->
-<!--               #{user.id},-->
-<!--               #{content},-->
-<!--               #{replyId})-->
-<!--      </when>-->
-<!--      <otherwise>-->
-<!--        INSERT INTO-->
-<!--            reply-->
-<!--                (article_id,-->
-<!--                 user_id,-->
-<!--                 content)-->
-<!--        VALUES-->
-<!--                (#{articleId},-->
-<!--                 #{user.id},-->
-<!--                 #{content})-->
-<!--      </otherwise>-->
-<!--    </choose>-->
-<!--  </insert>-->
-
-<!--  &lt;!&ndash;  유저 아이디로 유저 조회 &ndash;&gt;-->
-<!--  <select id="getArticleById" parameterType="long" resultMap="articleResultMap">-->
-<!--    SELECT-->
-<!--      *-->
-<!--    FROM-->
-<!--      article-->
-<!--    WHERE-->
-<!--      id = #{value}-->
-<!--  </select>-->
-
-<!--&lt;!&ndash;  해당 유저가 작성한 게시글 목록 반환 &ndash;&gt;-->
-<!--  <select id="getArticleListByUser" resultType="com.bbs.domain.Article" parameterType="com.bbs.domain.User">-->
-<!--    SELECT-->
-<!--        *-->
-<!--    FROM-->
-<!--        article-->
-<!--    WHERE-->
-<!--        user_id = #{id}-->
-<!--  </select>-->
-
-<!--&lt;!&ndash;  해당 게시글의 게시판 번호 조회 &ndash;&gt;-->
-<!--  <select id="getBoardIdById" parameterType="long" resultType="java.lang.Long">-->
-<!--    SELECT-->
-<!--        board_id-->
-<!--    FROM-->
-<!--        article-->
-<!--    WHERE-->
-<!--        id = #{value}-->
-<!--  </select>-->
-
-<!--  &lt;!&ndash;  대상 게시글 조회수 증가 &ndash;&gt;-->
-<!--  <update id="increaseArticleViewsById" parameterType="long">-->
-<!--    UPDATE-->
-<!--        article-->
-<!--    SET-->
-<!--        views = views + 1-->
-<!--    WHERE-->
-<!--        id = #{value}-->
-<!--  </update>-->
+<!--  삭제된 댓글 복구 처리 -->
+  <update id="recoverReplyById" parameterType="long">
+    UPDATE
+        reply
+    SET
+        reply_deleted = 0
+    WHERE
+        id = #{value}
+  </update>
 
 
-<!--  &lt;!&ndash;  게시물 수정 &ndash;&gt;-->
-<!--  <update id="editArticle" parameterType="com.bbs.domain.Article">-->
-<!--    UPDATE-->
-<!--        article-->
-<!--    SET-->
-<!--        title = #{title},-->
-<!--        content = #{content}-->
-<!--    WHERE-->
-<!--        id = #{id}-->
-<!--  </update>-->
-
-<!--&lt;!&ndash;  삭제된 댓글 복구 처리 &ndash;&gt;-->
-<!--  <update id="recoverReplyById" parameterType="long">-->
-<!--    UPDATE-->
-<!--        reply-->
-<!--    SET-->
-<!--        reply_deleted = 0-->
-<!--    WHERE-->
-<!--        id = #{value}-->
-<!--  </update>-->
-
-
-<!--  &lt;!&ndash;   게시판 관리 검색용 검색값 &ndash;&gt;-->
-<!--  <sql id="searchParameters">-->
-<!--    <trim prefix="and" prefixOverrides="and|or">-->
-<!--      <if test="startDate != null">-->
-<!--        #{startDate} &lt; article.date_registered-->
-<!--      </if>-->
-<!--      <if test="endDate != null">-->
-<!--        AND #{endDate} + INTERVAL 1 DAY &gt; article.date_registered-->
-<!--      </if>-->
-<!--      <if test="searchCategory == 1">-->
-<!--        <if test="searchKeyword != null">-->
-<!--          <bind name="keyword" value="'%' + searchKeyword + '%'" />-->
-<!--          AND (title LIKE #{keyword} OR content LIKE #{keyword} OR account LIKE #{keyword})-->
-<!--        </if>-->
-<!--      </if>-->
-<!--      <if test="searchCategory == 2">-->
-<!--        <if test="searchKeyword != null">-->
-<!--          <bind name="keyword" value="'%' + searchKeyword + '%'" />-->
-<!--          AND title LIKE #{keyword}-->
-<!--        </if>-->
-<!--      </if>-->
-<!--      <if test="searchCategory == 3">-->
-<!--        <if test="searchKeyword != null">-->
-<!--          <bind name="keyword" value="'%' + searchKeyword + '%'" />-->
-<!--          AND account LIKE #{keyword}-->
-<!--        </if>-->
-<!--      </if>-->
-<!--      <if test="searchCategory == 4">-->
-<!--        <if test="searchKeyword != null">-->
-<!--          <bind name="keyword" value="'%' + searchKeyword + '%'" />-->
-<!--          AND content LIKE #{keyword}-->
-<!--        </if>-->
-<!--      </if>-->
-<!--    </trim>-->
-<!--  </sql>-->
+  <!--   게시판 관리 검색용 검색값 -->
+  <sql id="searchParameters">
+    <trim prefix="and" prefixOverrides="and|or">
+      <if test="startDate != null">
+        #{startDate} &lt; article.date_registered
+      </if>
+      <if test="endDate != null">
+        AND #{endDate} + INTERVAL 1 DAY &gt; article.date_registered
+      </if>
+      <if test="searchCategory == 1">
+        <if test="searchKeyword != null">
+          <bind name="keyword" value="'%' + searchKeyword + '%'" />
+          AND (title LIKE #{keyword} OR content LIKE #{keyword} OR account LIKE #{keyword})
+        </if>
+      </if>
+      <if test="searchCategory == 2">
+        <if test="searchKeyword != null">
+          <bind name="keyword" value="'%' + searchKeyword + '%'" />
+          AND title LIKE #{keyword}
+        </if>
+      </if>
+      <if test="searchCategory == 3">
+        <if test="searchKeyword != null">
+          <bind name="keyword" value="'%' + searchKeyword + '%'" />
+          AND account LIKE #{keyword}
+        </if>
+      </if>
+      <if test="searchCategory == 4">
+        <if test="searchKeyword != null">
+          <bind name="keyword" value="'%' + searchKeyword + '%'" />
+          AND content LIKE #{keyword}
+        </if>
+      </if>
+    </trim>
+  </sql>
 </mapper>
