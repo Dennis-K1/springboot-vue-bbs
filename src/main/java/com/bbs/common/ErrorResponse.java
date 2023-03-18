@@ -9,6 +9,7 @@ import javax.validation.ConstraintViolation;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * Api 응답 실패에 대한 정보
@@ -86,6 +87,18 @@ public class ErrorResponse {
 	}
 
 	/**
+	 * ErrorCode 와 MethodArgumentTypeMismatchException 를 받아 api 응답 포맷에 맞게 ErrorResponse 생성하여 반환
+	 *
+	 * @param errorCode 에러의 status, code, message 를 정의하고 있는 enum
+	 * @param exception 타입 변환 실패 정보
+	 * @return ErrorResponse
+	 */
+	public static ErrorResponse of(ErrorCode errorCode, MethodArgumentTypeMismatchException exception) {
+		return new ErrorResponse(errorCode, FieldError.of(exception));
+	}
+
+
+	/**
 	 * api 응답 포맷에 맞게 ErrorResponse 생성하여 반환 (일반 에러 응답, "errors" 는 빈 배열로 반환)
 	 *
 	 * @param errorCode 에러의 status, code, message 를 정의하고 있는 enum
@@ -153,6 +166,20 @@ public class ErrorResponse {
 					error.getInvalidValue() == null ? "" : error.getInvalidValue().toString(),
 					error.getMessage()))
 				.collect(Collectors.toList());
+		}
+
+		/**
+		 * MethodArgumentTypeMismatchException 의 정보를 재정의된 ErrorResponses.FieldError 필드에 맞추어 반환
+		 *
+		 * @param exception 입력/요청값 검증 오류에 대한 정보
+		 * @return ErrorResponse.FieldError 목록
+		 */
+		private static List<FieldError> of(MethodArgumentTypeMismatchException exception) {
+			List fieldErrorList = new ArrayList<>();
+			fieldErrorList.add(new FieldError(exception.getName(),
+				(String)exception.getValue(),
+				exception.getMessage()));
+			return fieldErrorList;
 		}
 	}
 }

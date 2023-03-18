@@ -8,6 +8,7 @@ import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * 컨트롤러 에러 처리를 위한 핸들러
@@ -40,6 +41,19 @@ public class GlobalExceptionHandler {
 	protected ApiResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
 		log.error("MethodArgumentNotValidException", exception);
 		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, exception.getBindingResult());
+		return ApiResponse.error(errorResponse);
+	}
+
+	/**
+	 * 쿼리 스트링 타입 변환 실패 시 발생
+	 *
+	 * @param exception MethodArgumentTypeMismatchException
+	 * @return ApiResponse.error(errorResponse)
+	 */
+	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
+	protected ApiResponse handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+		log.error("MethodArgumentTypeMismatchException", exception);
+		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, exception);
 		return ApiResponse.error(errorResponse);
 	}
 
