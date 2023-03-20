@@ -14,12 +14,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class InterceptorConfig implements WebMvcConfigurer {
 
 	private final JwtInterceptor jwtInterceptor;
+	private static String[] EXCLUDE_PATH_PATTERNS = {"/api/v1/users/account-availability", "/api/v1/users/login", "/api/v1/users"};
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(jwtInterceptor)
 			.addPathPatterns("/**") // apply to all requests
-			.excludePathPatterns("/api/v1/login"); // except login
+			.excludePathPatterns(EXCLUDE_PATH_PATTERNS);
+		// TODO: 2023-03-20 @NoAuth 같은 커스텀 어노테이션 생성하여 excludePathPatterns 대체
 	}
 
 }

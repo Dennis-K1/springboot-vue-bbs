@@ -36,19 +36,18 @@ public class UserService {
 	/**
 	 * 로그인 유저가 입력한 아이디, 비밀번호 검증
 	 *
-	 * @param account 사용자 입력 아이디
-	 * @param password 사용자 입력 비밀번호
+	 * @param userInput 사용자 입력 아이디 및 비밀번호가 담긴 객체
 	 * @return 통과시 사용자 정보 반환
 	 */
-	public User login(String account, String password) {
-		User userDetail = userMapper.getUserByAccount(account);
-		if (userDetail == null) {
+	public User login(User userInput) {
+		User user = userMapper.getUserByAccount(userInput.getAccount());
+		if (user == null) {
 			throw new UserNotFoundException();
 		}
-		if (!password.equals(userDetail.getPassword())) {
+		if (!userInput.getPassword().equals(user.getPassword())) {
 			throw new UserNotFoundException();
 		}
-		return userDetail;
+		return user;
 	}
 
 	/**
@@ -57,7 +56,7 @@ public class UserService {
 	 * @param id 클라이언트 번호
 	 * @return
 	 */
-	public int deleteUserById(int id) {
+	public int deleteUserById(Long id) {
 		if (userMapper.deleteUserById(id) == 1) {
 			return userMapper.updateDateDeleted(id);
 		}
@@ -140,5 +139,15 @@ public class UserService {
 		return Base64
 			.getEncoder()
 			.encodeToString(messageDigest.digest());
+	}
+
+	/**
+	 * 사용자 비밀번호 변경
+	 *
+	 * @param user 사용자 정보
+	 * @return
+	 */
+	public int editUserPassword(User user) {
+		return userMapper.editUserPassword(user);
 	}
 }

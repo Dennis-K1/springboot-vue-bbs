@@ -6,6 +6,7 @@ import javax.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 /**
@@ -42,7 +43,7 @@ public class User {
 	 */
 	@NotBlank
 	@Length(min = 4, max = 15)
-	@Pattern(regexp = "/([a-zA-Z0-9].*[!,@,#,$,%,^,&,*,?,_,~])|([!,@,#,$,%,^,&,*,?,_,~].*[a-zA-Z0-9])/")
+	@Pattern(regexp = "([a-zA-Z0-9].*[!,@,#,$,%,^,&,*,?,_,~])|([!,@,#,$,%,^,&,*,?,_,~].*[a-zA-Z0-9])")
 	private String password;
 
 	/**
@@ -76,8 +77,9 @@ public class User {
 	private Date dateLastLogin;
 
 
-	@Builder
-	public User(Long roleId, String account, String password) {
+	@Builder(toBuilder = true)
+	public User(Long id, Long roleId, String account, String password) {
+		this.id = id;
 		this.roleId = roleId;
 		this.account = account;
 		this.password = password;
