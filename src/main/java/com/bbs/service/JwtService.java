@@ -13,7 +13,6 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
@@ -49,10 +48,6 @@ public class JwtService {
 			.setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 2)) // 120min
 			.signWith(key)
 			.compact();
-	}
-
-	public String generateRefreshToken(User user) {
-		return String.valueOf(UUID.randomUUID());
 	}
 
 	/**
