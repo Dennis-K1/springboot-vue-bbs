@@ -1,9 +1,14 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" />
+  <NavBar/>
+  <router-view/>
+  <FooterComponent/>
 </template>
 
 <script>
 import apiClient from './modules/axios'
+import NavBar from "/@/components/NavBar.vue";
+import HomePage from "/@/components/HomePage.vue";
+import FooterComponent from "/@/components/FooterComponent.vue";
 
 export default {
   async mounted() {
@@ -12,6 +17,9 @@ export default {
   },
   name: 'App',
   components: {
+    FooterComponent,
+    HomePage,
+    NavBar
   }
 }
 </script>
