@@ -5,9 +5,13 @@ import com.bbs.domain.User;
 import com.bbs.exception.AccessDeniedException;
 import com.bbs.exception.AccountNotAvailableException;
 import com.bbs.exception.DatabaseException;
+import com.bbs.exception.InvalidJwtException;
 import com.bbs.service.JwtService;
 import com.bbs.service.UserService;
 import io.jsonwebtoken.Claims;
+import java.util.Date;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotBlank;
@@ -15,6 +19,7 @@ import javax.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -50,6 +55,11 @@ public class UserController {
 	private final JwtService jwtService;
 
 	/**
+	 * 레디스 접근 객체
+	 */
+	private final RedisTemplate<String, Object> redisTemplate;
+
+	/**
 	 * 로그인 유저 정보 검증 후, 응답 헤더에 jwt 토큰 추가하여 성공 응답 반환
 	 *
 	 * @param user 유저 입력 아이디 및 비밀번호가 담긴 객체
@@ -57,19 +67,37 @@ public class UserController {
 	 * @return 로그인 성공 응답
 	 */
 	@PostMapping("/users/login")
-	public ApiResponse login(@RequestBody User user, HttpServletResponse response) {
+	public ApiResponse login(@RequestBody User user, HttpServletResponse response, HttpServletRequest request) {
+		String authorizationHeader = request.getHeader("Authorization");
+		if (authorizationHeader != null) {
+			String accessToken = authorizationHeader.substring(7);
+			if (redisTemplate.opsForValue().get("logoutList:" + accessToken).equals("logout")) {
+				redisTemplate.opsForValue().getAndDelete("logoutList:" + accessToken);
+			}
+		}
 		User userInput = user.toBuilder()
 			.password(userService.encodePassword(user.getPassword()))
 			.build();
 		User authenticatedUser = userService.login(userInput);
-		response.setHeader("Authorization", jwtService.generateToken(authenticatedUser));
-
+		response.setHeader("Authorization", jwtService.generateAccessToken(authenticatedUser));
 		return ApiResponse.success("로그인 성공");
 	}
 
+	/**
+	 * 로그아웃
+	 * "logoutList: {accessToken}" 키에 "logout" 값으로, 토큰 만료시간만큼 저장
+	 *
+	 * @param request 요청 객체
+	 * @return
+	 */
 	@PostMapping("/users/logout")
-	public ApiResponse logout() {
-		return null;
+	public ApiResponse logout(HttpServletRequest request) {
+		String accessToken = request.getHeader("Authorization").substring(7);
+		Claims claims = (Claims) request.getAttribute("claims");
+		redisTemplate.opsForValue()
+			.set("logoutList:" + accessToken, "logout",
+				claims.getExpiration().getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+		return ApiResponse.success("로그아웃 성공");
 	}
 
 	/**

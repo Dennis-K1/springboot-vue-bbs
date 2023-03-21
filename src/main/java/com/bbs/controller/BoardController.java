@@ -16,6 +16,7 @@ import javax.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Validated
 @RestController
 @RequestMapping("api/v1/")
+@CrossOrigin(origins = "http://localhost:5173", exposedHeaders = {"Content-Disposition"})
 @RequiredArgsConstructor
 public class BoardController {
 

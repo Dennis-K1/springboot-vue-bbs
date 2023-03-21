@@ -13,6 +13,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 /**
@@ -37,7 +38,7 @@ public class JwtService {
 	 * @param user 사용자 정보 객체
 	 * @return JWT
 	 */
-	public String generateToken(User user) {
+	public String generateAccessToken(User user) {
 		Map<String, Object> claims = new HashMap<>();
 		claims.put("sub", user.getAccount());
 		claims.put("id", user.getId());
@@ -45,9 +46,13 @@ public class JwtService {
 			.setClaims(claims)
 			.setIssuer(ISSUER)
 			.setIssuedAt(new Date(System.currentTimeMillis()))
-			.setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30)) // 30min
+			.setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 2)) // 120min
 			.signWith(key)
 			.compact();
+	}
+
+	public String generateRefreshToken(User user) {
+		return String.valueOf(UUID.randomUUID());
 	}
 
 	/**
