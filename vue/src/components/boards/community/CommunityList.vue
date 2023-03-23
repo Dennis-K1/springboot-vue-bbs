@@ -7,6 +7,7 @@
           <th>작성자</th>
           <th>제목</th>
           <th>이미지</th>
+          <th>댓글수</th>
           <th>조회수</th>
           <th>등록일</th>
         </tr>
@@ -18,6 +19,7 @@
             <a href="#">{{ article.title }}</a>
           </td>
           <td>{{ article.fileAttached }}</td>
+          <td>{{ article.replyList.length }}</td>
           <td>{{ article.views }}</td>
           <td>{{ article.dateRegistered }}</td>
         </tr>
@@ -31,33 +33,21 @@
     </div>
   </main>
 </template>
+
 <script>
 export default {
-  name: "Home"
+  name: "CommunityList"
 }
 </script>
 <script setup>
+
 import {inject} from "vue";
 
 const articleList = inject('articleList');
 
+
 </script>
+
 <style scoped>
-@media screen and (max-width: 767px) {
-  .table thead th {
-    font-size: 0.8rem;
-  }
-}
 
-table {
-  border-collapse: separate;
-  border-spacing: 0 1em;
-}
-
-.btn-sm {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  border-radius: 0.2rem;
-}
 </style>

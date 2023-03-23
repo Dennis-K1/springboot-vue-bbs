@@ -5,11 +5,12 @@
 </template>
 
 <script>
-import SearchBar from "/@/components/SearchBar.vue";
-import ArticleList from "/@/components/ArticleList.vue";
+import SearchBar from "/@/components/boards/utils/SearchBar.vue";
+import PaginationComponent from "/@/components/boards/utils/PaginationComponent.vue";
+import ArticleList from "/@/components/boards/ArticleList.vue";
 export default {
   name: "BoardContainer",
-  components: {SearchBar, ArticleList}
+  components: {SearchBar, ArticleList, PaginationComponent}
 }
 </script>
 <script setup>
@@ -25,9 +26,8 @@ export default {
  */
 
 import {onMounted, provide, ref, watch} from "vue";
-import apiClient from "/@/modules/apiUtil.js";
+import apiClient from "/@/modules/apiUtil";
 import {useRoute} from "vue-router";
-import PaginationComponent from "/@/components/PaginationComponent.vue";
 
 /**
  * 게시글 목록
@@ -60,6 +60,7 @@ const searchParameters = ref({
 /**
  * 하위 컴포넌트 주입
  */
+provide('boardPath', boardPath);
 provide('articleList', articleList);
 provide('searchParameters', searchParameters);
 provide('pageParameters', pageParameters);
