@@ -2,18 +2,18 @@
   <div v-for="article in articleList" class="card p-2 mb-2">
     <div class="row g-0">
       <div class="col-md-4">
-        <a href="#">
+        <router-link :to="`/${boardPath}/${article.id}`">
           <img :src="'data:image/jpg;base64,'+article.image"
-               class="rounded-start img-fluid mx-auto"
+               class="card-img-top m-auto pt-3 ps-3"
                alt="...">
-        </a>
+        </router-link>
       </div>
       <div class="col-md-6">
         <div class="card-body">
           <h5 class="card-title">
-            <a href="#">
-              {{article.title}}
-            </a>
+            <router-link :to="`/${boardPath}/${article.id}`">
+              {{ article.title }}
+            </router-link>
           </h5>
           <p class="card-text">{{ article.content }}</p>
           <p class="card-text"><small class="text-muted">{{ article.dateRegistered }}</small>
@@ -34,6 +34,7 @@ export default {
 import {inject} from "vue";
 
 const articleList = inject("articleList");
+const boardPath = inject("boardPath");
 
 </script>
 

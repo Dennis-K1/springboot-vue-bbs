@@ -14,7 +14,9 @@
         <tr v-for="article in articleList" :key="article.id">
           <td>{{ article.user.account }}</td>
           <td>
-            <a href="#">{{ article.title }}</a>
+            <router-link :to="`/${boardPath}/${article.id}`">
+              {{ article.title }}
+            </router-link>
           </td>
           <td v-if="article.replyList.length > 0" class="text-primary">답변 완료</td>
           <td v-else class="text-danger">미답변</td>
@@ -41,7 +43,7 @@ export default {
 import {inject} from "vue";
 
 const articleList = inject('articleList');
-
+const boardPath = inject("boardPath");
 
 </script>
 

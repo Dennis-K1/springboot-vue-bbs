@@ -2,16 +2,16 @@
   <div class="row row-cols-1 row-cols-md-2 g-4">
       <div  v-for="article in articleList" class="col">
         <div class="card">
-          <a href="#">
+          <router-link :to="`/${boardPath}/${article.id}`">
             <img :src="'data:image/jpg;base64,'+article.image"
                  class="card-img-top m-auto pt-3 ps-3"
                  alt="...">
-          </a>
+          </router-link>
           <div class="card-body">
             <h5 class="card-title">
-              <a href="#">
-                {{article.title}}
-              </a>
+                <router-link :to="`/${boardPath}/${article.id}`">
+                  {{ article.title }}
+                </router-link>
             </h5>
             <p class="card-text">{{article.content}}</p>
           </div>
@@ -32,6 +32,7 @@ export default {
 import {inject} from "vue";
 
 const articleList = inject("articleList");
+const boardPath = inject("boardPath");
 
 </script>
 <style scoped>
