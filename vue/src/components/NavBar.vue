@@ -1,5 +1,5 @@
 <template>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container-fluid">
     <a class="navbar-brand" href="/"> 포트폴리오 웹</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -29,6 +29,9 @@ export default {
 <script setup>
 import {computed} from "vue";
 
+/**
+ * 네비게이션 바 메뉴, position:표시 위치
+ */
 const menus = [
   {
     key: 'home', value: '홈', url: '/', position: 'left'
@@ -50,8 +53,19 @@ const menus = [
   },
 ]
 
+/**
+ * 왼쪽 표시 메뉴
+ */
 const leftMenus = computed(() => menus.filter((menu) => menu.position === 'left'));
+
+/**
+ * 오른쪽 표시 메뉴
+ */
 const rightMenus = computed(() => menus.filter((menu) => menu.position === 'right'));
+
+/**
+ * 메뉴 모음
+ */
 const menuCategory = [
   {
     id: 1, me_auto:true, value: leftMenus.value
