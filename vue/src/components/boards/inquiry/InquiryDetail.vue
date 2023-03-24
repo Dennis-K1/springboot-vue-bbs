@@ -29,18 +29,19 @@
         <td v-if="replyList.length > 0">답변 완료</td>
         <td v-else>미답변</td>
       </tr>
-      <tr>
+      <tr v-if="replyList.length !== 0">
         <th class="w-25 font-weight-bold text-primary d-flex">답변</th>
-        <td v-if="replyList.length === 0" class="reply">
-          <textarea id="reply" class="form-control"></textarea>
-          <button
-                  class="btn btn-primary float-end mt-2">답변하기
-          </button>
-        </td>
-        <td v-else class="reply">
+        <td class="reply">
           {{ replyList[0].content }}
         </td>
       </tr>
+      <div class="d-flex justify-content-start" name="buttons">
+        <router-link :to="'/'+boardPath">
+          <button class="btn btn-primary mt-2">
+            목록
+          </button>
+        </router-link>
+      </div>
     </table>
   </div>
 </template>
