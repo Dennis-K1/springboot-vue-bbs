@@ -131,4 +131,18 @@ public interface BoardMapper {
 	 */
 	Reply getReplyById(Long replyId);
 
+	/**
+	 * 조회수 top5 게시글 조회
+	 *
+	 * @return 게시글 목록
+	 */
+	List<Article> getTop5ViewsArticles();
+
+	/**
+	 * 각 게시판별 최근 3개 게시물 조회
+	 *
+	 * @return 게시글 목록
+	 */
+	List<Article> getTop3RecentArticlesByEachBoard();
+
 }

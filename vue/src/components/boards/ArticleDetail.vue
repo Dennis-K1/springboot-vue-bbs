@@ -76,14 +76,20 @@ provide('replyList', replyList);
 provide('boardPath', boardPath);
 
 /**
+ * 게시글 번호
+ */
+provide('articleId', articleId);
+
+/**
  * 게시글 조회
  */
 async function fetchData() {
   let response = await apiClient.get(`${boardPath.value}/${articleId.value}`);
   //todo 정보 없으면 not-found 로
-  article.value = response.data;
-  user.value = response.data.user;
-  replyList.value = response.data.replyList;
+  article.value = await response.data;
+  user.value = await response.data.user;
+  response = await  apiClient.get(`reply/${articleId.value}`)
+  replyList.value = await response.data;
 }
 
 /**

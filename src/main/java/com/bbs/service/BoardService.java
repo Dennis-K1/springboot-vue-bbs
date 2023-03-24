@@ -2,11 +2,14 @@ package com.bbs.service;
 
 import com.bbs.domain.Article;
 import com.bbs.domain.PageParameters;
+import com.bbs.domain.Reply;
 import com.bbs.domain.User;
 import com.bbs.exception.ArticleNotFoundException;
 import com.bbs.mapper.BoardMapper;
 import com.bbs.mapper.UserMapper;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -28,6 +31,25 @@ public class BoardService {
 	private final UserMapper userMapper;
 
 
+	/**
+	 * 홈 화면 정보 조회수 top 5 게시글 목록 및 각 게시판별 최근 게시글 3개씩
+	 *
+	 * @return Map<String, List < Article>> indexList
+	 */
+	public Map<String, List<Article>> getIndex() {
+		Map<String, List<Article>> indexList = new HashMap<>();
+		indexList.put("top5ViewsArticles", boardMapper.getTop5ViewsArticles());
+		indexList.put("top3RecentArticlesByEachBoard",
+			boardMapper.getTop3RecentArticlesByEachBoard());
+		return indexList;
+	}
+
+	/**
+	 * 검색 조건 기반 게시글 목록 조회
+	 *
+	 * @param pageParameters 검색 조건
+	 * @return
+	 */
 	public List<Article> getArticleList(PageParameters pageParameters) {
 		return boardMapper.getArticleList(pageParameters);
 	}
@@ -115,17 +137,22 @@ public class BoardService {
 		return boardMapper.getArticleListByUser(user);
 	}
 
-//	/**
-//	 * 답글(댓글) 등록
-//	 *
-//	 * @param reply 답글(댓글) 정보 객체
-//	 * @return
-//	 */
-//	public int inputReply(Reply reply) {
-//			User user = userMapper.getUserByAccount(reply.getUser().getAccount());
-//			reply.setUser(user);
-//			return boardMapper.inputReply(reply);
-//	}
+	/**
+	 * 답글(댓글) 등록
+	 *
+	 * @param reply 답글(댓글) 정보 객체
+	 * @return
+	 */
+	public int inputReply(Reply reply) {
+		User user = userMapper.getUserByAccount(reply.getUser().getAccount());
+		reply.setUser(user);
+		return boardMapper.inputReply(reply);
+	}
+
+	public List<Reply> getReplyList(Long articleId) {
+		return boardMapper.getReplyListById(articleId);
+	}
+
 
 	/**
 	 * 대상 답글(댓글) 삭제

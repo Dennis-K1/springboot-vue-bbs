@@ -5,13 +5,21 @@ import static com.bbs.validation.BoardNameValidator.boardNameMap;
 import com.bbs.common.ApiResponse;
 import com.bbs.domain.Article;
 import com.bbs.domain.File;
+import com.bbs.domain.NestedReply;
 import com.bbs.domain.PageParameters;
+import com.bbs.domain.Reply;
 import com.bbs.domain.User;
 import com.bbs.exception.ArticleNotMatchingBoardException;
 import com.bbs.service.BoardService;
 import com.bbs.service.FileService;
 import com.bbs.validation.BoardName;
+import com.bbs.validation.NoAuthentication;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import javax.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.Nullable;
@@ -22,6 +30,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Validated
 @RestController
 @RequestMapping("api/v1/")
-@CrossOrigin(origins = "http://localhost:5173", exposedHeaders = {"Content-Disposition"})
+@CrossOrigin(origins = "http://localhost:5173")
 @RequiredArgsConstructor
 public class BoardController {
 
@@ -50,18 +59,63 @@ public class BoardController {
 	 */
 	private final FileService fileService;
 
+	@NoAuthentication
+	@GetMapping("index")
+	public ApiResponse getIndex() {
+		return ApiResponse.success(boardService.getIndex());
+	}
+
+	@GetMapping("reply/{articleId}")
+	public ApiResponse registerReply(@PathVariable("articleId") @Positive Long articleId) {
+		return ApiResponse.success(boardService.getReplyList(articleId));
+	}
+
+	@PostMapping("reply")
+	public ApiResponse registerReply(@RequestBody @Validated Reply reply) {
+		boardService.inputReply(reply);
+		if (reply.getReplyId() != null) {
+			return ApiResponse.success(reply.toNestedReply());
+		}
+		return ApiResponse.success(reply);
+	}
+
+	@NoAuthentication
 	@GetMapping("{boards}")
 	public ApiResponse getArticleList(
 		@PathVariable("boards")
 		@BoardName String boardName,
-		@Validated PageParameters pageParameters) {
+		@Validated PageParameters pageParameters) throws IOException {
 		Long boardId = boardNameMap.get(boardName);
 		pageParameters.setBoardId(boardId);
 		int numberOfArticles = boardService.getNumberOfArticlesBySearch(pageParameters);
 		pageParameters.setPaginationElements(numberOfArticles);
-		return ApiResponse.success(boardService.getArticleList(pageParameters));
+		Map<String, Object> response = new HashMap<>();
+		List<Article> articleList = boardService.getArticleList(pageParameters);
+
+		if (boardId == 4L) {
+			for (Article article : articleList) {
+				setImageIfExists(article);
+			}
+		}
+
+		response.put("articleList", articleList);
+		response.put("pageParameters", pageParameters);
+		return ApiResponse.success(response);
 	}
 
+	/**
+	 * 대상 게시글에 등록된 파일(이미지) 이 있을 경우 정보 (Base64 인코딩 이미지) 입력
+	 *
+	 * @param article
+	 */
+	private void setImageIfExists(Article article) throws IOException {
+		File file = fileService.getFileByArticleId(article.getId());
+		if (!Objects.equals(file, null)) {
+			article.setImage(fileService.getEncodedImageFromFile(file));
+		}
+	}
+
+	@NoAuthentication
 	@GetMapping("{boards}/{articleId}")
 	public ApiResponse getArticle(
 		@PathVariable("boards") @BoardName String boardName,
@@ -71,11 +125,7 @@ public class BoardController {
 		if (article.getBoardId() != boardId) {
 			throw new ArticleNotMatchingBoardException(article.getId());
 		}
-
-		File file = fileService.getFileByArticleId(articleId);
-		if (file != null) {
-			article.setImage(fileService.getEncodedImageFromFile(file));
-		}
+		setImageIfExists(article);
 		return ApiResponse.success(article);
 	}
 

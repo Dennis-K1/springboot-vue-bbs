@@ -84,6 +84,15 @@
         id = #{value}
   </select>
 
+  <select id="getUserByIdForReply" resultType="com.bbs.domain.User">
+    SELECT
+      id, account
+    FROM
+      user
+    WHERE
+      id = #{value}
+  </select>
+
   <!--  id(PK)에 해당하는 유저 삭제 처리-->
   <update id="deleteUserById" parameterType="long">
     UPDATE
