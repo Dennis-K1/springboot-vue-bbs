@@ -25,7 +25,15 @@ import SimpleList from "/@/components/boards/gallery/listView/SimpleList.vue";
 import ImageList from "/@/components/boards/gallery/listView/ImageList.vue";
 import CardList from "/@/components/boards/gallery/listView/CardList.vue";
 
+/**
+ * 보기 모드 번호 (리스트 : 1, 갤러리 : 2, 웹진 : 3)
+ */
 const viewIndex = ref(1);
+
+/**
+ * 보기 모드 변경
+ * @param index 모드 번호
+ */
 const changeView = (index) => {
   viewIndex.value = index;
 }

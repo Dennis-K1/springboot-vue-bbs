@@ -1,7 +1,8 @@
 <template>
   <div class="mt-5 d-flex justify-content-center">
     <span class="mt-2">기간:</span>
-    <input class="form-control ms-2" style="width: 10%;" type="date" id="startDate"
+    <input
+        class="form-control ms-2" style="width: 10%;" type="date" id="startDate"
            v-model="searchParameters.startDate"
            :max="searchParameters.endDate">
 
