@@ -107,18 +107,6 @@ public class UserService {
 	}
 
 	/**
-	 * 아이디 유효성 검증
-	 *
-	 * @param account 대상 아이디
-	 */
-	public boolean isAccountValid(String account) {
-		if (getUserByAccount(account) != null) {
-			return true;
-		}
-		return false;
-	}
-
-	/**
 	 * 패스워드 인코딩 (SHA-512)
 	 *
 	 * @param password 유저 입력 패스워드
@@ -150,4 +138,15 @@ public class UserService {
 	public int editUserPassword(User user) {
 		return userMapper.editUserPassword(user);
 	}
+
+	/**
+	 * PK, 사용자 번호로 사용자 정보 조회
+	 *
+	 * @param userId 대상 사용자 번호
+	 * @return User
+	 */
+	public User getUserById(Long userId) {
+		return userMapper.getUserById(userId);
+	}
+
 }

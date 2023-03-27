@@ -1,16 +1,21 @@
 package com.bbs.controller;
 
 import com.bbs.common.ApiResponse;
+import com.bbs.domain.Article;
 import com.bbs.domain.User;
 import com.bbs.exception.AccessDeniedException;
 import com.bbs.exception.AccountNotAvailableException;
 import com.bbs.exception.DatabaseException;
 import com.bbs.exception.InvalidJwtException;
+import com.bbs.service.BoardService;
 import com.bbs.service.JwtService;
 import com.bbs.service.UserService;
+import com.bbs.validation.NoAuthentication;
 import io.jsonwebtoken.Claims;
-import java.util.Date;
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -39,15 +44,19 @@ import org.springframework.web.bind.annotation.RestController;
 @Validated
 @RestController
 @RequestMapping("api/v1/")
-@CrossOrigin(origins = "http://localhost:5173", exposedHeaders = {"Content-Disposition"})
+@CrossOrigin(origins = "*", allowedHeaders = "*", exposedHeaders = "*")
 @RequiredArgsConstructor
 public class UserController {
 
-	// TODO: 2023-03-21 패스워드 인코더 뢔퍼
 	/**
 	 * 유저 관련 서비스
 	 */
 	private final UserService userService;
+
+	/**
+	 * 게시글 관련 서비스
+	 */
+	private final BoardService boardService;
 
 	/**
 	 * Jwt 인증 관련 서비스
@@ -60,27 +69,86 @@ public class UserController {
 	private final RedisTemplate<String, Object> redisTemplate;
 
 	/**
+	 * 유저 프로필 정보
+	 *
+	 * @param request 요청 객체 (JWT 정보)
+	 * @return 데이터
+	 */
+	@GetMapping("/users/profile")
+	public ApiResponse getUserProfile(HttpServletRequest request) {
+		Long userId = getUserIdByClaims(request);
+
+		User user = userService.getUserById(userId);
+		List<Article> articleList = boardService.getArticleListByUser(userId);
+
+		Map<String, Object> response = new HashMap<>();
+		response.put("user", user);
+		response.put("articleList", articleList);
+		return ApiResponse.success(response);
+	}
+	/**
+	 * 아이디 중복 여부 검사
+	 *
+	 * @param account 사용자 입력 아이디
+	 * @return
+	 */
+	@NoAuthentication
+	@PostMapping("/users/account-availability")
+	public ApiResponse checkAccountAvailability(@RequestParam("account") @NotBlank @Length(min = 3, max = 9) String account) {
+		if (userService.isAccountAvailable(account)){
+			return ApiResponse.success("아이디 사용 가능");
+		}
+		throw new AccountNotAvailableException("아이디 사용 불가");
+	}
+
+	/**
 	 * 로그인 유저 정보 검증 후, 응답 헤더에 jwt 토큰 추가하여 성공 응답 반환
+	 * 로그아웃시 프론트에서 jwt 정보 등 삭제, 따라서 logoutList 에 있는 jwt 로 접근 시도하는 경우 에러 처리
 	 *
 	 * @param user 유저 입력 아이디 및 비밀번호가 담긴 객체
 	 * @param response 응답 객체
 	 * @return 로그인 성공 응답
 	 */
+	@NoAuthentication
 	@PostMapping("/users/login")
 	public ApiResponse login(@RequestBody User user, HttpServletResponse response, HttpServletRequest request) {
+		// jwt 가 있는지 확인후, 있다면 이미 로그아웃된 토큰인지 확인
 		String authorizationHeader = request.getHeader("Authorization");
-		if (authorizationHeader != null) {
+		if (!isNull(authorizationHeader)) {
 			String accessToken = authorizationHeader.substring(7);
-			if (redisTemplate.opsForValue().get("logoutList:" + accessToken).equals("logout")) {
-				redisTemplate.opsForValue().getAndDelete("logoutList:" + accessToken);
+			String status = (String) redisTemplate.opsForValue().get("logoutList:" + accessToken);
+			if (isLoggedOut(status)) {
+				throw new InvalidJwtException();
 			}
 		}
 		User userInput = user.toBuilder()
 			.password(userService.encodePassword(user.getPassword()))
 			.build();
 		User authenticatedUser = userService.login(userInput);
+
 		response.setHeader("Authorization", jwtService.generateAccessToken(authenticatedUser));
+
+		userService.increaseVisitCount(authenticatedUser);
+		userService.updateLastLogin(authenticatedUser);
 		return ApiResponse.success("로그인 성공");
+	}
+
+	/**
+	 * logoutList 에 올라가 있는 jwt 인지 확인
+	 * @param status 상태값
+	 * @return boolean
+	 */
+	private boolean isLoggedOut(String status) {
+		return status.equals("logout");
+	}
+
+	/**
+	 * jwt 헤더 존재 여부 확인
+	 * @param authorizationHeader jwt 담긴 헤더
+	 * @return boolean
+	 */
+	private boolean isNull(String authorizationHeader) {
+		return "null".equals(authorizationHeader) || authorizationHeader == null;
 	}
 
 	/**
@@ -88,7 +156,7 @@ public class UserController {
 	 * "logoutList: {accessToken}" 키에 "logout" 값으로, 토큰 만료시간만큼 저장
 	 *
 	 * @param request 요청 객체
-	 * @return
+	 * @return 메세지
 	 */
 	@PostMapping("/users/logout")
 	public ApiResponse logout(HttpServletRequest request) {
@@ -105,24 +173,25 @@ public class UserController {
 	 *
 	 * @param id 회원 번호
 	 * @param request 요청 객체 (JWT 정보)
-	 * @return
+	 * @return 유저 정보
 	 */
 	@GetMapping("/users/{id}")
 	public ApiResponse getUser(@PathVariable("id") @Positive Long id, HttpServletRequest request) {
-		Claims claims = (Claims) request.getAttribute("claims");
-		Long userId = claims.get("id",Long.class);
-		if (userId != id) {
+		Long userId = getUserIdByClaims(request);
+		if (!Objects.equals(userId, id)) {
 			throw new AccessDeniedException("접근 거부");
 		}
-		return ApiResponse.success(userService.getUserByAccount(claims.getSubject()));
+		return ApiResponse.success(userService.getUserById(userId));
 	}
+
 
 	/**
 	 * 회원 등록
 	 *
 	 * @param user 사용자 입력값
-	 * @return
+	 * @return 메세지
 	 */
+	@NoAuthentication
 	@PostMapping("/users")
 	public ApiResponse registerUser(@RequestBody User user) {
 		if (!userService.isAccountAvailable(user.getAccount())) {
@@ -139,19 +208,6 @@ public class UserController {
 		return ApiResponse.success("등록 성공");
 	}
 
-	/**
-	 * 아이디 중복 여부 검사
-	 *
-	 * @param account 사용자 입력 아이디
-	 * @return
-	 */
-	@PostMapping("/users/account-availability")
-	public ApiResponse checkAccountAvailability(@RequestParam("account") @NotBlank @Length(min = 3, max = 9) String account) {
-		if (userService.isAccountAvailable(account)){
-			return ApiResponse.success("아이디 사용 가능");
-		}
-		throw new AccountNotAvailableException("아이디 사용 불가");
-	}
 
 	/**
 	 * 회원 정보 수정 (비밀번호 수정)
@@ -159,13 +215,12 @@ public class UserController {
 	 * @param id 회원 번호
 	 * @param user 사용자 입력값
 	 * @param request 요청 객체 (jwt 정보)
-	 * @return
+	 * @return 메세지
 	 */
 	@PutMapping("/users/{id}")
 	public ApiResponse editUser(@PathVariable("id") @Positive Long id, @RequestBody User user, HttpServletRequest request) {
-		Claims claims = (Claims) request.getAttribute("claims");
-		Long userId = claims.get("id",Long.class);
-		if (userId != id) {
+		Long userId = getUserIdByClaims(request);
+		if (!Objects.equals(userId, id)) {
 			throw new AccessDeniedException("접근 거부");
 		}
 		User userInput = user.toBuilder()
@@ -185,13 +240,12 @@ public class UserController {
 	 *
 	 * @param id 회원 번호
 	 * @param request 요청 객체 (jwt 정보)
-	 * @return
+	 * @return 메세지
 	 */
 	@DeleteMapping("/users/{id}")
 	public ApiResponse deleteUser(@PathVariable("id") @Positive Long id, HttpServletRequest request) {
-		Claims claims = (Claims) request.getAttribute("claims");
-		Long userId = claims.get("id",Long.class);
-		if (userId != id) {
+		Long userId = getUserIdByClaims(request);
+		if (!Objects.equals(userId, id)) {
 			throw new AccessDeniedException("접근 거부");
 		}
 		int result = userService.deleteUserById(id);
@@ -199,5 +253,15 @@ public class UserController {
 			throw new DatabaseException("회원 탈퇴 처리 중 에러 발생");
 		}
 		return ApiResponse.success("탈퇴 성공");
+	}
+
+	/**
+	 * request jwt 에서 유저 번호 추출
+	 * @param request 요청 객체
+	 * @return 유저 번호
+	 */
+	private Long getUserIdByClaims(HttpServletRequest request) {
+		Claims claims = (Claims) request.getAttribute("claims");
+		return claims.get("id",Long.class);
 	}
 }
