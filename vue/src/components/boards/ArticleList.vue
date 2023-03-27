@@ -78,6 +78,16 @@ const searchParameters = ref({
 })
 
 /**
+ * 로그인된 회원 아이디
+ */
+const userLoggedIn = localStorage.getItem('userLoggedIn');
+
+/**
+ * 로그인 회원 아이디 주입
+ */
+provide('userLoggedIn', userLoggedIn);
+
+/**
  * 게시판명 주입
  */
 provide('boardPath', boardPath);

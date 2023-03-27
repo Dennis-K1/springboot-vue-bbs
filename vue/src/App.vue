@@ -5,16 +5,11 @@
 </template>
 
 <script>
-import apiClient from './modules/axios'
-import NavBar from "/@/components/NavBar.vue";
+import NavBar from "/@/components/commons/NavBar.vue";
 import HomePage from "/@/components/HomePage.vue";
-import FooterComponent from "/@/components/FooterComponent.vue";
+import FooterComponent from "/@/components/commons/FooterComponent.vue";
 
 export default {
-  async mounted() {
-    const data = await apiClient.get('notice');
-    console.log(data);
-  },
   name: 'App',
   components: {
     FooterComponent,
@@ -22,4 +17,7 @@ export default {
     NavBar
   }
 }
+</script>
+<script setup>
+
 </script>
