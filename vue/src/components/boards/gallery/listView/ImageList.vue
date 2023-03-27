@@ -33,7 +33,14 @@ export default {
 
 import {inject} from "vue";
 
-const articleList = inject("articleList");
+/**
+ * ArticleList 에서 주입 받는 게시글 목록
+ */
+const articleList = inject('articleList');
+
+/**
+ * ArticleList 에서 주입 받는 경로명
+ */
 const boardPath = inject("boardPath");
 
 </script>
