@@ -132,7 +132,7 @@ const nestedReplyContent = ref('');
 /**
  * 로그인된 회원 아이디
  */
-const userLoggedIn = inject('userLoggedIn');
+const userLoggedIn = localStorage.getItem('userLoggedIn');
 
 /**
  * ArticleDetail 에서 주입 받은 게시판 경로
@@ -146,13 +146,14 @@ const boardPath = inject('boardPath');
  * 3. 댓글 목록에 추가하여 반영
  */
 const registerReply = async () => {
-  validation.authenticate(`/${boardPath.value}/${articleId.value}`);
+  validation.authenticate('reply', true);
   validationErrorMessage.value.reply = validation.validateReply(replyContent.value)
   if (validationErrorMessage.value.reply !== '') {
     return;
   }
+
   let response = await apiClient.post('reply',
-      {articleId: articleId.value, content: replyContent.value, user: {account: 'asd'}});
+      {articleId: articleId.value, content: replyContent.value, user: {account: userLoggedIn}});
   if (response.success) {
     replyContent.value = '';
     replyList.value.push(response.data);
@@ -167,7 +168,7 @@ const registerReply = async () => {
  * 3. 댓글 목록의 해당 대댓글 목록에 추가하여 반영
  */
 const registerNestedReply = async (replyId, replyIndex) => {
-  validation.authenticate(`/${boardPath.value}/${articleId.value}`);
+  validation.authenticate('reply', true);
   validationErrorMessage.value.nestedReply = validation.validateReply(nestedReplyContent.value)
   if (validationErrorMessage.value.nestedReply !== '') {
     return;
@@ -176,7 +177,7 @@ const registerNestedReply = async (replyId, replyIndex) => {
     articleId: articleId.value,
     content: nestedReplyContent.value,
     replyId,
-    user: {account: 'asd'}
+    user: {account: userLoggedIn}
   });
   if (response.success) {
     nestedReplyContent.value = '';

@@ -1,6 +1,6 @@
 package com.bbs.domain;
 
-import java.util.Date;
+import java.sql.Date;
 import java.util.List;
 import javax.validation.constraints.NotBlank;
 import lombok.Builder;
@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
+import org.springframework.web.multipart.MultipartFile;
 
 
 /**

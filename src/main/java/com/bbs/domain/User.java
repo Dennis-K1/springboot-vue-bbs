@@ -6,6 +6,7 @@ import javax.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.validator.constraints.Length;
 
 /**
@@ -17,6 +18,7 @@ import org.hibernate.validator.constraints.Length;
  *    DATE		:   java.util.Date 타입
  */
 @Getter
+@Setter
 @NoArgsConstructor
 public class User {
 

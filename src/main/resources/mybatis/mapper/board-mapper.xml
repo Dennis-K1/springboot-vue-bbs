@@ -21,45 +21,15 @@
 
 <!--  게시판 최근 게시글 각 3개-->
   <select id="getTop3RecentArticlesByEachBoard" resultType="com.bbs.domain.Article">
-    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 1 ORDER BY date_registered LIMIT 3)
+    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 1 ORDER BY date_registered DESC LIMIT 3)
     UNION ALL
-    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 2 ORDER BY date_registered LIMIT 3)
+    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 2 ORDER BY date_registered DESC LIMIT 3)
     UNION ALL
-    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 3 ORDER BY date_registered LIMIT 3)
+    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 3 ORDER BY date_registered DESC LIMIT 3)
     UNION ALL
-    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 4 ORDER BY date_registered LIMIT 3)
+    (SELECT * FROM article WHERE article_deleted = 0 AND board_id = 4 ORDER BY date_registered DESC LIMIT 3)
   </select>
 
-
-<!--  조회수 top5 게시글 목록 -->
-  <select id="getTop5ViewsArticles" resultType="com.bbs.domain.Article">
-    SELECT
-        article.*,
-        board_category.name AS boardName
-    FROM
-        article
-         INNER JOIN
-            board_category
-            ON article.board_id = board_category.id
-    WHERE
-        article_deleted = 0
-        ORDER BY
-            views DESC
-            LIMIT 5
-  </select>
-
-<!-- 답변 안된 1:1문의글 갯수 -->
-  <select id="getNumberOfPendingInquiries" resultType="integer">
-    SELECT
-        COUNT(*) as count
-    FROM
-        article
-        LEFT OUTER JOIN
-            reply
-            ON article.id = reply.article_id
-    WHERE
-        article_deleted = 0 AND board_id = 3 AND reply.id IS NULL
-  </select>
 
 <!--  댓글 삭제 처리-->
   <update id="deleteReplyById" parameterType="long">
@@ -93,7 +63,7 @@
   </select>
 
   <!--  댓글 조회 -->
-  <select id="getReplyById" parameterType="long" resultType="com.bbs.domain.Reply">
+  <select id="getNestedReplyById" parameterType="long" resultType="com.bbs.domain.NestedReply">
     SELECT
       *
     FROM
@@ -159,25 +129,6 @@
       id = #{value}
   </update>
 
-  <!--  id(PK)에 해당하는 게시글 복구 -->
-  <update id="recoverArticleById" parameterType="long">
-    UPDATE
-      article
-    SET
-      article_deleted = 0
-    WHERE
-      id = #{value}
-  </update>
-
-  <!--  게시글 삭제일 복구 -->
-  <update id="recoverDateDeleted" parameterType="long">
-    UPDATE
-      article
-    SET
-      date_deleted = NULL
-    WHERE
-      id = #{value}
-  </update>
 
   <!--  게시글 등록   -->
   <insert id="inputArticle" parameterType="com.bbs.domain.Article">
@@ -241,13 +192,13 @@
   </select>
 
 <!--  해당 유저가 작성한 게시글 목록 반환 -->
-  <select id="getArticleListByUser" resultType="com.bbs.domain.Article" parameterType="com.bbs.domain.User">
+  <select id="getArticleListByUser" resultType="com.bbs.domain.Article" parameterType="long">
     SELECT
         *
     FROM
         article
     WHERE
-        user_id = #{id}
+        user_id = #{value}
   </select>
 
 <!--  해당 게시글의 게시판 번호 조회 -->
@@ -283,15 +234,6 @@
         id = #{id}
   </update>
 
-<!--  삭제된 댓글 복구 처리 -->
-  <update id="recoverReplyById" parameterType="long">
-    UPDATE
-        reply
-    SET
-        reply_deleted = 0
-    WHERE
-        id = #{value}
-  </update>
 
 
   <!--   게시판 관리 검색용 검색값 -->

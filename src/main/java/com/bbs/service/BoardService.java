@@ -1,6 +1,7 @@
 package com.bbs.service;
 
 import com.bbs.domain.Article;
+import com.bbs.domain.NestedReply;
 import com.bbs.domain.PageParameters;
 import com.bbs.domain.Reply;
 import com.bbs.domain.User;
@@ -32,13 +33,12 @@ public class BoardService {
 
 
 	/**
-	 * 홈 화면 정보 조회수 top 5 게시글 목록 및 각 게시판별 최근 게시글 3개씩
+	 * 홈 화면 정보 각 게시판별 최근 게시글 3개씩
 	 *
 	 * @return Map<String, List < Article>> indexList
 	 */
 	public Map<String, List<Article>> getIndex() {
 		Map<String, List<Article>> indexList = new HashMap<>();
-		indexList.put("top5ViewsArticles", boardMapper.getTop5ViewsArticles());
 		indexList.put("top3RecentArticlesByEachBoard",
 			boardMapper.getTop3RecentArticlesByEachBoard());
 		return indexList;
@@ -48,7 +48,7 @@ public class BoardService {
 	 * 검색 조건 기반 게시글 목록 조회
 	 *
 	 * @param pageParameters 검색 조건
-	 * @return
+	 * @return 게시글 목록
 	 */
 	public List<Article> getArticleList(PageParameters pageParameters) {
 		return boardMapper.getArticleList(pageParameters);
@@ -58,7 +58,7 @@ public class BoardService {
 	 * 검색 조건 기반 총 게시글 갯수 조회
 	 *
 	 * @param pageParameters 검색 조건
-	 * @return
+	 * @return 갯수
 	 */
 	public int getNumberOfArticlesBySearch(PageParameters pageParameters) {
 		return boardMapper.getNumberOfArticlesBySearch(pageParameters);
@@ -68,7 +68,7 @@ public class BoardService {
 	 * 대상 게시글 삭제 (삭제 처리, 삭제일 업데이트)
 	 *
 	 * @param id 대상 게시글 번호
-	 * @return
+	 * @return 수행 결과
 	 */
 	public int deleteArticleById(Long id) {
 		if (boardMapper.deleteArticleById(id) == 1) {
@@ -82,7 +82,7 @@ public class BoardService {
 	 * 게시글 등록 (회원 아이디 조회, 게시글 등록) -- 등록 시 유저 count_article (게시 게시글 수) 증가
 	 *
 	 * @param article 게시글 정보 객체
-	 * @return
+	 * @return 수행 결과
 	 */
 	public int inputArticle(Article article) {
 
@@ -97,7 +97,7 @@ public class BoardService {
 	 * 게시글 조회
 	 *
 	 * @param id 대상 게시글 번호
-	 * @return
+	 * @return 게시글
 	 */
 	public Article getArticleById(Long id) {
 		Article article = boardMapper.getArticleById(id);
@@ -111,7 +111,7 @@ public class BoardService {
 	 * 게시글 조회수 증가
 	 *
 	 * @param id 대상 게시글
-	 * @return
+	 * @return 수행 결과
 	 */
 	public int increaseArticleViewsById(Long id) {
 		return boardMapper.increaseArticleViewsById(id);
@@ -121,7 +121,7 @@ public class BoardService {
 	 * 게시글 수정
 	 *
 	 * @param article 수정할 정보 및 대상 게시글 번호가 든 객체
-	 * @return
+	 * @return 수행 결과
 	 */
 	public int editArticle(Article article) {
 		return boardMapper.editArticle(article);
@@ -130,18 +130,18 @@ public class BoardService {
 	/**
 	 * 대상 사용자가 작성한 게시글 목록 반환
 	 *
-	 * @param user 대상 사용자 정보 객체
-	 * @return
+	 * @param userId 대상 사용자 번호
+	 * @return 게시글 목록
 	 */
-	public List<Article> getArticleListByUser(User user) {
-		return boardMapper.getArticleListByUser(user);
+	public List<Article> getArticleListByUser(Long userId) {
+		return boardMapper.getArticleListByUser(userId);
 	}
 
 	/**
 	 * 답글(댓글) 등록
 	 *
 	 * @param reply 답글(댓글) 정보 객체
-	 * @return
+	 * @return 수행 결과
 	 */
 	public int inputReply(Reply reply) {
 		User user = userMapper.getUserByAccount(reply.getUser().getAccount());
@@ -158,11 +158,20 @@ public class BoardService {
 	 * 대상 답글(댓글) 삭제
 	 *
 	 * @param replyId 대상 답글(댓글) 번호
-	 * @return
+	 * @return 수행 결과
 	 */
 	public int deleteReplyById(Long replyId) {
 		return boardMapper.deleteReplyById(replyId);
 	}
 
 
+	/**
+	 * 대상 답글(댓글) 조회
+	 *
+	 * @param replyId 대상 답글(댓글) 번호
+	 * @return Reply
+	 */
+	public NestedReply getNestedReplyById(Long replyId) {
+		return boardMapper.getNestedReplyById(replyId);
+	}
 }
