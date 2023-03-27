@@ -34,7 +34,7 @@ const routes = [
       },
       {
         path: ':id',
-        component: ArticleDetail,
+        component: ArticleDetail
       },
       {
         path: 'form',
@@ -68,7 +68,17 @@ const routes = [
       next()
     }
   },
-  {path: '/signup', name: 'signup', component: SignupPage},
+  {path: '/signup', name: 'signup', component: SignupPage,
+    /**
+     * 로그인한 회원이라면 회원가입 페이지 진입 불가
+     */
+    beforeEnter: (to, from, next) => {
+      const jwt = localStorage.getItem('jwt');
+      if (jwt !== null) {
+        location.replace(from.path);
+      }
+      next()
+    }},
   {
     path: '/logout', name: 'logout', component: LogoutPage,
     /**
