@@ -3,7 +3,7 @@
     {{ boardPath }}
   </div>
   <div class="card bg-white p-4 mt-3">
-    <table class="mt-3 table table-borderless">
+    <table v-if="isArticleDetail === 1" class="mt-3 table table-borderless">
       <tr>
         <th class="w-25 font-weight-bold text-primary">제목</th>
         <td>{{ article.title }}</td>
@@ -32,6 +32,9 @@
         <td v-else>이미지 없음</td>
       </tr>
     </table>
+    <template v-else>
+      <ArticleEditForm/>
+    </template>
     <div class="d-flex justify-content-start" name="buttons">
       <router-link :to="'/'+boardPath">
         <button class="btn btn-primary ms-2">
@@ -41,18 +44,27 @@
       <button class="ms-2 btn btn-danger" @click="deleteArticle" v-if="user.account === userLoggedIn">
         삭제
       </button>
+      <button class="ms-2 btn btn-danger" @click="isArticleDetail = 0" v-if="user.account === userLoggedIn && isArticleDetail === 1">
+        수정
+      </button>
+      <button class="ms-2 btn btn-danger" @click="isArticleDetail = 1" v-else>
+        수정 취소
+      </button>
     </div>
   </div>
 </template>
 
 <script>
+import ArticleEditForm from "/@/components/boards/ArticleEditForm.vue";
+
 export default {
-  name: "NoticeDetail"
+  name: "NoticeDetail",
+  components:ArticleEditForm
 }
 </script>
 <script setup>
 
-import {inject} from "vue";
+import {inject, ref} from "vue";
 import apiClient from "/@/modules/apiUtil.js";
 
 /**
@@ -75,6 +87,7 @@ const user = inject('user');
  */
 const userLoggedIn = inject('userLoggedIn');
 
+const isArticleDetail = ref(1);
 /**
  * 게시글 삭제 (작성자 회원에게만 보임)
  */
