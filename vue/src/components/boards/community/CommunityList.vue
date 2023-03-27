@@ -28,9 +28,11 @@
         </tbody>
       </table>
       <div class="d-flex justify-content-end">
-        <button class="btn btn-sm btn-primary" type="button">
-          게시글 등록
-        </button>
+        <router-link :to="'/' + boardPath + '/' + 'form'">
+          <button class="btn btn-sm btn-primary" type="button">
+            게시글 등록
+          </button>
+        </router-link>
       </div>
     </div>
   </main>
@@ -45,7 +47,14 @@ export default {
 
 import {inject} from "vue";
 
+/**
+ * ArticleList 에서 주입 받는 게시글 목록
+ */
 const articleList = inject('articleList');
+
+/**
+ * ArticleList 에서 주입 받는 경로명
+ */
 const boardPath = inject("boardPath");
 
 </script>
