@@ -1,7 +1,7 @@
 <template>
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container-fluid">
-    <a class="navbar-brand" href="/"> 포트폴리오 웹</a>
+    <a class="navbar-brand"> 포트폴리오 웹</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -27,7 +27,12 @@ export default {
 </script>
 
 <script setup>
-import {computed} from "vue";
+import {computed, inject, ref} from "vue";
+
+/**
+ * jwt 로 로그인 여부 확인
+ */
+const isLoggedIn = ref(localStorage.getItem('jwt'));
 
 /**
  * 네비게이션 바 메뉴, position:표시 위치
@@ -51,6 +56,15 @@ const menus = [
   {
     key: 'profile', value: '마이페이지', url: '/profile', position: 'right'
   },
+  {
+    key: 'logout', value: '로그아웃', url: '/logout', position: 'right'
+  },
+  {
+    key: 'login', value: '로그인', url:'/login', position: 'right'
+  },
+  {
+    key: 'signup', value: '회원가입', url:'/signup', position: 'right'
+  }
 ]
 
 /**
@@ -61,7 +75,13 @@ const leftMenus = computed(() => menus.filter((menu) => menu.position === 'left'
 /**
  * 오른쪽 표시 메뉴
  */
-const rightMenus = computed(() => menus.filter((menu) => menu.position === 'right'));
+const rightMenus = computed(() => {
+  if (isLoggedIn.value !== null) {
+    return menus.filter((menu) => menu.key === 'profile' || menu.key === 'logout');
+  } else {
+    return menus.filter((menu) => menu.key === 'login' || menu.key === 'signup');
+  }
+});
 
 /**
  * 메뉴 모음
@@ -73,7 +93,9 @@ const menuCategory = [
   {
     id: 2, me_auto:false, value: rightMenus.value
   },
-]
+];
+
+
 </script>
 
 <style scoped>
