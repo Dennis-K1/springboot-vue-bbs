@@ -135,6 +135,10 @@ const nestedReplyContent = ref('');
 const userLoggedIn = inject('userLoggedIn');
 
 /**
+ * ArticleDetail 에서 주입 받은 게시판 경로
+ */
+const boardPath = inject('boardPath');
+/**
  * 댓글 등록
  *
  * 1. 유효성 검사
@@ -142,6 +146,7 @@ const userLoggedIn = inject('userLoggedIn');
  * 3. 댓글 목록에 추가하여 반영
  */
 const registerReply = async () => {
+  validation.authenticate(`/${boardPath.value}/${articleId.value}`);
   validationErrorMessage.value.reply = validation.validateReply(replyContent.value)
   if (validationErrorMessage.value.reply !== '') {
     return;
@@ -162,6 +167,7 @@ const registerReply = async () => {
  * 3. 댓글 목록의 해당 대댓글 목록에 추가하여 반영
  */
 const registerNestedReply = async (replyId, replyIndex) => {
+  validation.authenticate(`/${boardPath.value}/${articleId.value}`);
   validationErrorMessage.value.nestedReply = validation.validateReply(nestedReplyContent.value)
   if (validationErrorMessage.value.nestedReply !== '') {
     return;

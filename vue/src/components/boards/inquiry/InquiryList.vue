@@ -25,11 +25,10 @@
         </tbody>
       </table>
       <div class="d-flex justify-content-end">
-        <router-link :to="'/' + boardPath + '/' + 'form'">
-          <button class="btn btn-sm btn-primary" type="button">
-            게시글 등록
-          </button>
-        </router-link>
+        <button @click="validation.authenticate(`/${boardPath}/form`)"
+                class="btn btn-sm btn-primary" type="button">
+          게시글 등록
+        </button>
       </div>
     </div>
   </main>
@@ -43,6 +42,7 @@ export default {
 <script setup>
 
 import {inject} from "vue";
+import validation from "/@/components/commons/validation.js";
 
 /**
  * ArticleList 에서 주입 받는 게시글 목록
