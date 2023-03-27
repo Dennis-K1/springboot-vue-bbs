@@ -38,6 +38,9 @@
           목록
         </button>
       </router-link>
+      <button class="ms-2 btn btn-danger" @click="deleteArticle" v-if="user.account === userLoggedIn">
+        삭제
+      </button>
     </div>
   </div>
 </template>
@@ -50,13 +53,36 @@ export default {
 <script setup>
 
 import {inject} from "vue";
+import apiClient from "/@/modules/apiUtil.js";
 
+/**
+ * ArticleDetail 에서 주입 받은 게시글 정보
+ */
 const article = inject('article');
+
+/**
+ * ArticleDetail 에서 주입 받은 게시판 경로
+ */
 const boardPath = inject('boardPath');
+
+/**
+ * ArticleDetail 에서 주입 받은 작성자 정보
+ */
 const user = inject('user');
 
-const deleteArticle = (articleId) => {
-  console.log(articleId)
+/**
+ * ArticleDetail 에서 주입 받은 로그인 회원 아이디
+ */
+const userLoggedIn = inject('userLoggedIn');
+
+/**
+ * 게시글 삭제 (작성자 회원에게만 보임)
+ */
+const deleteArticle = async () => {
+  let response = await apiClient.delete(`${boardPath.value}/${article.value.id}`);
+  if (response.success) {
+    location.replace(`/${boardPath.value}`);
+  }
 }
 </script>
 <style scoped>

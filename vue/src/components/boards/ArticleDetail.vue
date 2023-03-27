@@ -56,6 +56,16 @@ const user = ref({});
 const replyList = ref([]);
 
 /**
+ * 로그인된 회원 아이디
+ */
+const userLoggedIn = localStorage.getItem('userLoggedIn');
+
+/**
+ * 로그인 회원 아이디 주입
+ */
+provide('userLoggedIn', userLoggedIn);
+
+/**
  * 게시글 주입
  */
 provide('article', article);
@@ -85,7 +95,6 @@ provide('articleId', articleId);
  */
 async function fetchData() {
   let response = await apiClient.get(`${boardPath.value}/${articleId.value}`);
-  //todo 정보 없으면 not-found 로
   article.value = await response.data;
   user.value = await response.data.user;
   response = await  apiClient.get(`reply/${articleId.value}`)

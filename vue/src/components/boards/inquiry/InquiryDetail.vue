@@ -25,6 +25,13 @@
         <td>{{ article.content }}</td>
       </tr>
       <tr>
+        <th class="w-25 font-weight-bold text-primary">이미지</th>
+        <td v-if="article.image !== undefined"><img :src="'data:image/jpg;base64,'+article.image"
+                                                    width="240"
+                                                    height="300"/></td>
+        <td v-else>이미지 없음</td>
+      </tr>
+      <tr>
         <th class="w-25 font-weight-bold text-primary">답변 여부</th>
         <td v-if="replyList.length > 0">답변 완료</td>
         <td v-else>미답변</td>
@@ -41,6 +48,9 @@
             목록
           </button>
         </router-link>
+        <button class="ms-2 btn btn-danger" @click="deleteArticle" v-if="user.account === userLoggedIn">
+          삭제
+        </button>
       </div>
     </table>
   </div>
@@ -54,13 +64,42 @@ export default {
 <script setup>
 
 import {inject} from "vue";
+import apiClient from "/@/modules/apiUtil.js";
 
+/**
+ * ArticleDetail 에서 주입 받은 게시글 정보
+ */
 const article = inject('article');
-const boardPath = inject('boardPath');
-const user = inject('user');
-const replyList = inject('replyList');
-console.log(replyList)
 
+/**
+ * ArticleDetail 에서 주입 받은 게시판 경로
+ */
+const boardPath = inject('boardPath');
+
+/**
+ * ArticleDetail 에서 주입 받은 작성자 정보
+ */
+const user = inject('user');
+
+/**
+ * ArticleDetail 에서 주입 받은 댓글 목록
+ */
+const replyList = inject('replyList');
+
+/**
+ * ArticleDetail 에서 주입 받은 로그인 회원 아이디
+ */
+const userLoggedIn = inject('userLoggedIn');
+
+/**
+ * 게시글 삭제 (작성자 회원에게만 보임)
+ */
+const deleteArticle = async () => {
+  let response = await apiClient.delete(`${boardPath.value}/${article.value.id}`);
+  if (response.success) {
+    location.replace(`/${boardPath.value}`);
+  }
+}
 </script>
 <style scoped>
 
