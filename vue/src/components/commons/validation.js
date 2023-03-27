@@ -112,10 +112,14 @@ export default {
    * 로그인이 필요한 서비스 이용전 로그인되어있는지 확인
    *
    * @param targetPath 대상 서비스 경로
+   * @param isPost 단순 페이지 반환이 아닌 POST 요청인 경우
    */
-  authenticate(targetPath) {
+  authenticate(targetPath, isPost=null) {
     const userLoggedIn = localStorage.getItem('userLoggedIn');
     if (userLoggedIn !== null) {
+      if (isPost === true){
+        return;
+      }
       router.push(targetPath);
     } else {
       alert('로그인이 필요합니다.')

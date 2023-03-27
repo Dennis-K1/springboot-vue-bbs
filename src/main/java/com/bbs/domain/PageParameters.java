@@ -8,6 +8,7 @@ import javax.validation.constraints.Pattern;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.lang.Nullable;
 
 /**
  * 페이지네이션, 검색 parameter 정보가 담긴 객체
@@ -36,18 +37,21 @@ public class PageParameters {
 	 * 조회 대상 페이지 번호
 	 */
 	@Min(value = 1)
+	@Nullable
 	private int pageNumber;
 
 	/**
 	 * 검색 범위 시작일
 	 */
-	@Pattern(regexp = "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$")
+	@Pattern(regexp = "^$|^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$")
+	@Nullable
 	private String startDate;
 
 	/**
 	 * 검색 범위 종료일
 	 */
-	@Pattern(regexp = "^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$")
+	@Pattern(regexp = "^$|^\\d{4}\\-(0[1-9]|1[012])\\-(0[1-9]|[12][0-9]|3[01])$")
+	@Nullable
 	private String endDate;
 
 	/**
@@ -55,6 +59,7 @@ public class PageParameters {
 	 */
 	@Min(value = 1)
 	@Max(value = 4)
+	@Nullable
 	private String searchCategory;
 
 	/**
