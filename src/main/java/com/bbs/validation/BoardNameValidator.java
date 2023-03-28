@@ -23,7 +23,6 @@ public class BoardNameValidator implements ConstraintValidator<BoardName, String
 
 	@Override
 	public boolean isValid(String value, ConstraintValidatorContext context) {
-		// TODO: 2023-03-17 형식 변경 필요 자동 validator , cache 활용 등
 		if (boardNameMap.get(value) != null) {
 			return true;
 		}
