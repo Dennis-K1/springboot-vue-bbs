@@ -2,6 +2,7 @@ package com.bbs.service;
 
 import com.bbs.domain.User;
 import com.bbs.exception.AccessDeniedException;
+import com.bbs.exception.InvalidJwtException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
@@ -77,13 +78,13 @@ public class JwtService {
 				.parseClaimsJws(token);
 			String issuer = claimsJws.getBody().getIssuer();
 			if (!ISSUER.equals(issuer)) {
-				throw new AccessDeniedException("접근 불가");
+				throw new AccessDeniedException();
 			}
 			return true;
 		} catch (ExpiredJwtException e) {
 			throw new ExpiredJwtException(e.getHeader(), e.getClaims(), "토큰 만료");
 		} catch (Exception e) {
-			return false;
+			throw new InvalidJwtException();
 		}
 	}
 

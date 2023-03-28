@@ -2,7 +2,10 @@ package com.bbs.exception;
 
 public class ArticleNotFoundException extends DataNotFoundException{
 
-	public ArticleNotFoundException(Long articleId) {
-		super(String.format("%s번 게시글은 존재하지 않음", articleId));
+	/**
+	 * 게시글 존재하지 않을 시
+	 */
+	public ArticleNotFoundException() {
+		super(ErrorCode.DATA_NOT_FOUND);
 	}
 }

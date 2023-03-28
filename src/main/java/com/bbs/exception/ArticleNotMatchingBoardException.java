@@ -2,7 +2,10 @@ package com.bbs.exception;
 
 public class ArticleNotMatchingBoardException extends DataNotFoundException{
 
-	public ArticleNotMatchingBoardException(Long articleId) {
-		super(String.format("%s번 게시글은 요청받은 게시판에 속하지 않음", articleId));
+	/**
+	 * 요청 게시판 경로에 속하는 게시글 번호가 아닌 경우
+	 */
+	public ArticleNotMatchingBoardException() {
+		super(ErrorCode.DATA_NOT_FOUND);
 	}
 }

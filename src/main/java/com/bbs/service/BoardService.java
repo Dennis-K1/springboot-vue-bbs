@@ -102,7 +102,7 @@ public class BoardService {
 	public Article getArticleById(Long id) {
 		Article article = boardMapper.getArticleById(id);
 		if (article == null) {
-			throw new ArticleNotFoundException(id);
+			throw new ArticleNotFoundException();
 		}
 		return article;
 	}

@@ -98,7 +98,7 @@ public class UserController {
 		if (userService.isAccountAvailable(account)){
 			return ApiResponse.success("아이디 사용 가능");
 		}
-		throw new AccountNotAvailableException("아이디 사용 불가");
+		throw new AccountNotAvailableException();
 	}
 
 	/**
@@ -114,8 +114,9 @@ public class UserController {
 	public ApiResponse login(@RequestBody User user, HttpServletResponse response, HttpServletRequest request) {
 		// jwt 가 있는지 확인후, 있다면 이미 로그아웃된 토큰인지 확인
 		String authorizationHeader = request.getHeader("Authorization");
-		if (!isNull(authorizationHeader)) {
+		if (isValidHeader(authorizationHeader)) {
 			String accessToken = authorizationHeader.substring(7);
+			jwtService.validateToken(accessToken);
 			String status = (String) redisTemplate.opsForValue().get("logoutList:" + accessToken);
 			if (isLoggedOut(status)) {
 				throw new InvalidJwtException();
@@ -131,24 +132,6 @@ public class UserController {
 		userService.increaseVisitCount(authenticatedUser);
 		userService.updateLastLogin(authenticatedUser);
 		return ApiResponse.success("로그인 성공");
-	}
-
-	/**
-	 * logoutList 에 올라가 있는 jwt 인지 확인
-	 * @param status 상태값
-	 * @return boolean
-	 */
-	private boolean isLoggedOut(String status) {
-		return status.equals("logout");
-	}
-
-	/**
-	 * jwt 헤더 존재 여부 확인
-	 * @param authorizationHeader jwt 담긴 헤더
-	 * @return boolean
-	 */
-	private boolean isNull(String authorizationHeader) {
-		return "null".equals(authorizationHeader) || authorizationHeader == null;
 	}
 
 	/**
@@ -179,7 +162,7 @@ public class UserController {
 	public ApiResponse getUser(@PathVariable("id") @Positive Long id, HttpServletRequest request) {
 		Long userId = getUserIdByClaims(request);
 		if (!Objects.equals(userId, id)) {
-			throw new AccessDeniedException("접근 거부");
+			throw new AccessDeniedException();
 		}
 		return ApiResponse.success(userService.getUserById(userId));
 	}
@@ -193,9 +176,9 @@ public class UserController {
 	 */
 	@NoAuthentication
 	@PostMapping("/users")
-	public ApiResponse registerUser(@RequestBody User user) {
+	public ApiResponse registerUser(@RequestBody @Validated User user) {
 		if (!userService.isAccountAvailable(user.getAccount())) {
-			throw new AccountNotAvailableException("아이디 사용 불가");
+			throw new AccountNotAvailableException();
 		}
 		User userDetail = user.toBuilder()
 			.password(userService.encodePassword(user.getPassword()))
@@ -203,7 +186,7 @@ public class UserController {
 			.build();
 		int result = userService.registerUser(userDetail);
 		if (result != 1) {
-			throw new DatabaseException("회원 등록 중 이상 발생");
+			throw new DatabaseException();
 		}
 		return ApiResponse.success("등록 성공");
 	}
@@ -221,7 +204,7 @@ public class UserController {
 	public ApiResponse editUser(@PathVariable("id") @Positive Long id, @RequestBody User user, HttpServletRequest request) {
 		Long userId = getUserIdByClaims(request);
 		if (!Objects.equals(userId, id)) {
-			throw new AccessDeniedException("접근 거부");
+			throw new AccessDeniedException();
 		}
 		User userInput = user.toBuilder()
 			.id(id)
@@ -230,7 +213,7 @@ public class UserController {
 			.build();
 		int result = userService.editUserPassword(userInput);
 		if (result != 1) {
-			throw new DatabaseException("회원 수정 처리 중 에러 발생");
+			throw new DatabaseException();
 		}
 		return ApiResponse.success("비밀번호 변경 성공");
 	}
@@ -246,11 +229,11 @@ public class UserController {
 	public ApiResponse deleteUser(@PathVariable("id") @Positive Long id, HttpServletRequest request) {
 		Long userId = getUserIdByClaims(request);
 		if (!Objects.equals(userId, id)) {
-			throw new AccessDeniedException("접근 거부");
+			throw new AccessDeniedException();
 		}
 		int result = userService.deleteUserById(id);
 		if (result != 1) {
-			throw new DatabaseException("회원 탈퇴 처리 중 에러 발생");
+			throw new DatabaseException();
 		}
 		return ApiResponse.success("탈퇴 성공");
 	}
@@ -263,5 +246,32 @@ public class UserController {
 	private Long getUserIdByClaims(HttpServletRequest request) {
 		Claims claims = (Claims) request.getAttribute("claims");
 		return claims.get("id",Long.class);
+	}
+
+	/**
+	 * logoutList 에 올라가 있는 jwt 인지 확인
+	 * @param status 상태값
+	 * @return boolean
+	 */
+	private boolean isLoggedOut(String status) {
+		if (Objects.equals(null, status)) {
+			return false;
+		}
+		return status.equals("logout");
+	}
+
+	/**
+	 * jwt 헤더 유효성 검증
+	 * @param authorizationHeader jwt 담긴 헤더
+	 * @return boolean
+	 */
+	private boolean isValidHeader(String authorizationHeader) {
+		if (!authorizationHeader.startsWith("Bearer")) {
+			throw new InvalidJwtException();
+		}
+		if ("null".equals(authorizationHeader)) {
+			throw new InvalidJwtException();
+		}
+		return true;
 	}
 }

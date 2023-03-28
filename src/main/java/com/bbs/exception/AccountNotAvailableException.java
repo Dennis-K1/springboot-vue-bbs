@@ -2,7 +2,10 @@ package com.bbs.exception;
 
 public class AccountNotAvailableException extends CustomException{
 
-	public AccountNotAvailableException(String message) {
-		super(message, ErrorCode.ACCOUNT_NOT_AVAILABLE);
+	/**
+	 * 아이디 사용 불가
+	 */
+	public AccountNotAvailableException() {
+		super(ErrorCode.ACCOUNT_NOT_AVAILABLE);
 	}
 }

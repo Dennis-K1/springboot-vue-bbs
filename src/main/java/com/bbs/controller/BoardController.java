@@ -98,7 +98,7 @@ public class BoardController {
 		Long userId = getUserIdByClaims(request);
 		User user = userService.getUserById(userId);
 		if (!Objects.equals(user.getAccount(), reply.getUser().getAccount())) {
-			throw new AccessDeniedException("접근 거부: 잘못된 사용자");
+			throw new AccessDeniedException();
 		}
 
 		boardService.inputReply(reply);
@@ -106,17 +106,6 @@ public class BoardController {
 			return ApiResponse.success(reply.toNestedReply());
 		}
 		return ApiResponse.success(reply);
-	}
-
-	/**
-	 * request jwt 에서 유저 번호 추출
-	 * @param request 요청 객체
-	 * @return 유저 번호
-	 */
-	private  Long getUserIdByClaims(HttpServletRequest request) {
-		Claims claims = (Claims) request.getAttribute("claims");
-		Long userId = claims.get("id",Long.class);
-		return userId;
 	}
 
 	/**
@@ -133,7 +122,7 @@ public class BoardController {
 		Long userId = getUserIdByClaims(request);
 		NestedReply reply = boardService.getNestedReplyById(replyId);
 		if (!Objects.equals(reply.getUserId(), userId)) {
-			throw new AccessDeniedException("접근 거부: 잘못된 사용자");
+			throw new AccessDeniedException();
 		}
 		boardService.deleteReplyById(replyId);
 		return ApiResponse.success("댓글 삭제 성공");
@@ -174,27 +163,6 @@ public class BoardController {
 		return ApiResponse.success(response);
 	}
 
-	/**
-	 * 갤러리 게시판인지 확인
-	 *
-	 * @param boardId 게시판 번호
-	 * @return boolean
-	 */
-	private boolean isGallery(Long boardId) {
-		return boardId == 4L;
-	}
-
-	/**
-	 * 대상 게시글에 등록된 파일(이미지) 이 있을 경우 정보 (Base64 인코딩 이미지) 입력
-	 *
-	 * @param article
-	 */
-	private void setImageIfExists(Article article) throws IOException {
-		File file = fileService.getFileByArticleId(article.getId());
-		if (!Objects.equals(file, null)) {
-			article.setImage(fileService.getEncodedImageFromFile(file));
-		}
-	}
 
 	/**
 	 * 게시글 상세 조회
@@ -215,7 +183,7 @@ public class BoardController {
 		boardService.increaseArticleViewsById(articleId);
 		Article article = boardService.getArticleById(articleId);
 		if (!Objects.equals(article.getBoardId(), boardId)) {
-			throw new ArticleNotMatchingBoardException(article.getId());
+			throw new ArticleNotMatchingBoardException();
 		}
 
 		setImageIfExists(article);
@@ -247,7 +215,7 @@ public class BoardController {
 		Long userId = getUserIdByClaims(request);
 		User user = userService.getUserById(userId);
 		if ((boardId == 1L || boardId == 4L) && user.getRoleId() == 2L) {
-			throw new AccessDeniedException("접근 불가: 권한 없음");
+			throw new AccessDeniedException();
 		}
 		article.setBoardId(boardId);
 		article.setUser(user);
@@ -284,14 +252,14 @@ public class BoardController {
 		Long boardId = boardNameMap.get(boardName);
 		Article previousArticle = boardService.getArticleById(articleId);
 		if (!Objects.equals(previousArticle.getBoardId(), boardId)) {
-			throw new ArticleNotMatchingBoardException(articleId);
+			throw new ArticleNotMatchingBoardException();
 		}
 
 		//공지사항, 갤러리의 경우 유저 권한 조회하여 예외처리
 		Long userId = getUserIdByClaims(request);
 		User user = userService.getUserById(userId);
 		if ((boardId == 1L || boardId == 4L) && user.getRoleId() == 2L) {
-			throw new AccessDeniedException("접근 불가: 권한 없음");
+			throw new AccessDeniedException();
 		}
 		article.setId(articleId);
 		boardService.editArticle(article);
@@ -326,10 +294,10 @@ public class BoardController {
 		Long userId = getUserIdByClaims(request);
 
 		if (!Objects.equals(article.getUser().getId(), userId)) {
-			throw new AccessDeniedException("접근 거부: 잘못된 사용자");
+			throw new AccessDeniedException();
 		}
 		if (!Objects.equals(article.getBoardId(), boardId)) {
-			throw new ArticleNotMatchingBoardException(articleId);
+			throw new ArticleNotMatchingBoardException();
 		}
 
 		boardService.deleteArticleById(articleId);
@@ -340,5 +308,38 @@ public class BoardController {
 			fileService.deleteFolder(previousFile);
 		}
 		return ApiResponse.success("게시글 삭제 성공");
+	}
+
+	/**
+	 * request jwt 에서 유저 번호 추출
+	 * @param request 요청 객체
+	 * @return 유저 번호
+	 */
+	private  Long getUserIdByClaims(HttpServletRequest request) {
+		Claims claims = (Claims) request.getAttribute("claims");
+		Long userId = claims.get("id",Long.class);
+		return userId;
+	}
+
+	/**
+	 * 갤러리 게시판인지 확인
+	 *
+	 * @param boardId 게시판 번호
+	 * @return boolean
+	 */
+	private boolean isGallery(Long boardId) {
+		return boardId == 4L;
+	}
+
+	/**
+	 * 대상 게시글에 등록된 파일(이미지) 이 있을 경우 정보 (Base64 인코딩 이미지) 입력
+	 *
+	 * @param article
+	 */
+	private void setImageIfExists(Article article) throws IOException {
+		File file = fileService.getFileByArticleId(article.getId());
+		if (!Objects.equals(file, null)) {
+			article.setImage(fileService.getEncodedImageFromFile(file));
+		}
 	}
 }
