@@ -13,15 +13,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @RequiredArgsConstructor
 public class InterceptorConfig implements WebMvcConfigurer {
 
+	/**
+	 * jwt 인증 인터셉터
+	 */
 	private final JwtInterceptor jwtInterceptor;
-	private static String[] EXCLUDE_PATH_PATTERNS = {"/api/v1/users/account-availability", "/api/v1/users/login", "/api/v1/users"};
 
+	/**
+	 * 인터셉터 인증 불필요한 컨트롤러 경로의 경우 어노테이션으로 제외 처리
+	 *
+	 * @param registry
+	 */
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(jwtInterceptor)
-			.addPathPatterns("/**") // apply to all requests
-			.excludePathPatterns(EXCLUDE_PATH_PATTERNS);
-		// TODO: 2023-03-20 @NoAuth 같은 커스텀 어노테이션 생성하여 excludePathPatterns 대체
+			.addPathPatterns("/**");
 	}
-
 }

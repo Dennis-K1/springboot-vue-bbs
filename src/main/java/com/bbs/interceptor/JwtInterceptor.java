@@ -1,14 +1,14 @@
 package com.bbs.interceptor;
 
-import com.bbs.domain.User;
 import com.bbs.exception.AccessDeniedException;
 import com.bbs.exception.InvalidJwtException;
 import com.bbs.service.JwtService;
+import com.bbs.validation.NoAuthentication;
 import io.jsonwebtoken.Claims;
-import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
@@ -42,6 +42,24 @@ public class JwtInterceptor implements HandlerInterceptor {
 	@Override
 	public boolean preHandle(HttpServletRequest request, HttpServletResponse response,
 		Object handler) {
+		// Handle preflight request
+		if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+			response.setHeader("Access-Control-Allow-Origin", "*");
+			response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+			response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+			response.setHeader("Access-Control-Max-Age", "3600");
+			return true;
+		}
+
+		// NoAuthentication 어노테이션 붙은 메소드 제외
+		if (handler instanceof HandlerMethod) {
+			HandlerMethod handlerMethod = (HandlerMethod) handler;
+			if (handlerMethod.getMethod().isAnnotationPresent(NoAuthentication.class)) {
+				return true;
+			}
+		}
+
+		// 토큰값 검증
 		String authorizationHeader = request.getHeader("Authorization");
 		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
 			throw new AccessDeniedException("로그인 필요");
@@ -49,6 +67,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 
 		String accessToken = authorizationHeader.substring(7); // remove "Bearer "
 
+		// 이미 로그아웃 처리된 토근인지 확인
 		String logoutFlag = (String) redisTemplate.opsForValue().get("logoutList:" + accessToken);
 		if (logoutFlag != null && "logout".equals(logoutFlag) ) {
 			throw new InvalidJwtException();
@@ -59,7 +78,6 @@ public class JwtInterceptor implements HandlerInterceptor {
 		if (!jwtService.validateToken(accessToken)) {
 			throw new InvalidJwtException();
 		}
-
 		request.setAttribute("claims", claims);
 		return true;
 	}
