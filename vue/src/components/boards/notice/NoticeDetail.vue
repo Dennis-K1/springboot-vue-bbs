@@ -47,7 +47,7 @@
       <button class="ms-2 btn btn-danger" @click="isArticleDetail = 0" v-if="user.account === userLoggedIn && isArticleDetail === 1">
         수정
       </button>
-      <button class="ms-2 btn btn-danger" @click="isArticleDetail = 1" v-else>
+      <button class="ms-2 btn btn-danger" @click="isArticleDetail = 1" v-else-if="user.account === userLoggedIn && isArticleDetail === 0">
         수정 취소
       </button>
     </div>

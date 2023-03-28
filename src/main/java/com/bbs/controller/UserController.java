@@ -266,6 +266,9 @@ public class UserController {
 	 * @return boolean
 	 */
 	private boolean isValidHeader(String authorizationHeader) {
+		if (Objects.equals(null, authorizationHeader)) {
+			return false;
+		}
 		if (!authorizationHeader.startsWith("Bearer")) {
 			throw new InvalidJwtException();
 		}
