@@ -1,9 +1,9 @@
 package com.bbs.exception;
 
-import com.bbs.common.ApiResponse;
 import com.bbs.common.ErrorResponse;
 import javax.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,13 +21,15 @@ public class GlobalExceptionHandler {
 	 * 제약 조건 위배 시 발생 (유효성 검사 실패)
 	 *
 	 * @param exception ConstraintViolationException
-	 * @return ApiResponse.error(errorResponse)
+	 * @return
 	 */
 	@ExceptionHandler(ConstraintViolationException.class)
-	protected ApiResponse handleConstraintViolationException(ConstraintViolationException exception) {
+	protected ResponseEntity handleConstraintViolationException(ConstraintViolationException exception) {
 		log.error("ConstraintViolationException", exception.getConstraintViolations());
 		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_PATH_VALUE, exception.getConstraintViolations());
-		return ApiResponse.error(errorResponse);
+		return ResponseEntity
+			.status(ErrorCode.INVALID_INPUT_VALUE.getStatus())
+			.body(errorResponse);
 	}
 
 	/**
@@ -35,65 +37,75 @@ public class GlobalExceptionHandler {
 	 * \ @RequestBody, @RequestParam 으로 값을 받을 때 @Validated, @Valid 에러 시 발생 (검증 오류)
 	 *
 	 * @param exception MethodArgumentNotValidException
-	 * @return ApiResponse.error(errorResponse)
+	 * @return
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
-	protected ApiResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+	protected ResponseEntity handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
 		log.error("MethodArgumentNotValidException : {}", exception);
 		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, exception.getBindingResult());
-		return ApiResponse.error(errorResponse);
+		return ResponseEntity
+			.status(ErrorCode.INVALID_INPUT_VALUE.getStatus())
+			.body(errorResponse);
 	}
 
 	/**
 	 * 쿼리 스트링 타입 변환 실패 시 발생
 	 *
 	 * @param exception MethodArgumentTypeMismatchException
-	 * @return ApiResponse.error(errorResponse)
+	 * @return
 	 */
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
-	protected ApiResponse handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+	protected ResponseEntity handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
 		log.error("MethodArgumentTypeMismatchException", exception);
 		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, exception);
-		return ApiResponse.error(errorResponse);
+		return ResponseEntity
+			.status(ErrorCode.INVALID_INPUT_VALUE.getStatus())
+			.body(errorResponse);
 	}
 
 	/**
 	 * \ @ModelAttribute 로 값을 받을 때 바인딩 에러 시 발생
 	 *
 	 * @param exception BindException
-	 * @return ApiResponse.error(errorResponse)
+	 * @return
 	 */
 	@ExceptionHandler({BindException.class})
-	protected ApiResponse handleBindException(BindException exception) {
+	protected ResponseEntity handleBindException(BindException exception) {
 		log.error("BindException", exception);
 		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, exception.getBindingResult());
-		return ApiResponse.error(errorResponse);
+		return ResponseEntity
+			.status(ErrorCode.INVALID_INPUT_VALUE.getStatus())
+			.body(errorResponse);
 	}
 
 	/**
 	 * 자체 정의 에러 발생 시 처리
 	 *
 	 * @param exception CustomException 을 상속하는 모든 자체 정의 에러
-	 * @return ApiResponse.error(errorResponse)
+	 * @return
 	 */
 	@ExceptionHandler({CustomException.class})
-	protected ApiResponse handleCustomApiException(CustomException exception) {
+	protected ResponseEntity handleCustomApiException(CustomException exception) {
 		log.error("CustomException", exception);
 		ErrorCode errorCode = exception.getErrorCode();
 		ErrorResponse errorResponse = ErrorResponse.of(errorCode);
-		return ApiResponse.error(errorResponse);
+		return ResponseEntity
+			.status(errorCode.getStatus())
+			.body(errorResponse);
 	}
 
 	/**
 	 * 상기 정의된 에러 외에 모든 에러에 대한 처리
 	 *
 	 * @param exception Exception
-	 * @return ApiResponse.error(errorResponse)
+	 * @return
 	 */
 	@ExceptionHandler({Exception.class})
-	protected ApiResponse handleException(Exception exception) {
+	protected ResponseEntity handleException(Exception exception) {
 		log.error("Exception", exception);
 		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
-		return ApiResponse.error(errorResponse);
+		return ResponseEntity
+			.status(ErrorCode.INTERNAL_SERVER_ERROR.getStatus())
+			.body(errorResponse);
 	}
 }

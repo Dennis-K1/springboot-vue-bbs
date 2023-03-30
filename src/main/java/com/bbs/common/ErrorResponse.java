@@ -19,11 +19,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class ErrorResponse {
 
 	/**
-	 * HTTP status 번호 (헤더와 동일)
-	 */
-	private int status;
-
-	/**
 	 * 에러에 대한 커스텀 코드
 	 */
 	private String code;
@@ -47,7 +42,6 @@ public class ErrorResponse {
 	 */
 	private ErrorResponse(ErrorCode errorCode, List<FieldError> errors) {
 		this.message = errorCode.getMessage();
-		this.status = errorCode.getStatus();
 		this.errors = errors;
 		this.code = errorCode.getCode();
 	}
@@ -59,7 +53,6 @@ public class ErrorResponse {
 	 */
 	private ErrorResponse(ErrorCode errorCode) {
 		this.message = errorCode.getMessage();
-		this.status = errorCode.getStatus();
 		this.code = errorCode.getCode();
 		this.errors = new ArrayList<>();
 	}

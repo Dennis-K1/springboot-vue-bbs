@@ -13,11 +13,6 @@ import lombok.Getter;
 public class ApiResponse<T> {
 
 	/**
-	 * Api 호출 실행 결과
-	 */
-	private boolean success;
-
-	/**
 	 * Api 응답 데이터
 	 */
 	private T data;
@@ -35,7 +30,6 @@ public class ApiResponse<T> {
 	 */
 	public static <T> ApiResponse success(T data) {
 		return new ApiResponseBuilder<>()
-			.success(true)
 			.data(data)
 			.build();
 	}
@@ -48,7 +42,6 @@ public class ApiResponse<T> {
 	 */
 	public static ApiResponse error(ErrorResponse error) {
 		return new ApiResponseBuilder<>()
-			.success(false)
 			.error(error)
 			.build();
 	}
