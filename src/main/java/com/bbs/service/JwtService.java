@@ -57,11 +57,16 @@ public class JwtService {
 	 * @return Claims
 	 */
 	public Claims parseToken(String token) {
-		return Jwts.parserBuilder()
-			.setSigningKey(key)
-			.build()
-			.parseClaimsJws(token)
-			.getBody();
+		try {
+			Claims claims =  Jwts.parserBuilder()
+				.setSigningKey(key)
+				.build()
+				.parseClaimsJws(token)
+				.getBody();
+			return claims;
+		} catch (Exception e) {
+			throw new InvalidJwtException();
+		}
 	}
 
 	/**
