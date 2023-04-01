@@ -21,7 +21,7 @@ public class GlobalExceptionHandler {
 	 * 제약 조건 위배 시 발생 (유효성 검사 실패)
 	 *
 	 * @param exception ConstraintViolationException
-	 * @return
+	 * @return ResponseEntity status/body
 	 */
 	@ExceptionHandler(ConstraintViolationException.class)
 	protected ResponseEntity handleConstraintViolationException(ConstraintViolationException exception) {
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
 	 * \ @RequestBody, @RequestParam 으로 값을 받을 때 @Validated, @Valid 에러 시 발생 (검증 오류)
 	 *
 	 * @param exception MethodArgumentNotValidException
-	 * @return
+	 * @return ResponseEntity status/body
 	 */
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	protected ResponseEntity handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
 	 * 쿼리 스트링 타입 변환 실패 시 발생
 	 *
 	 * @param exception MethodArgumentTypeMismatchException
-	 * @return
+	 * @return ResponseEntity status/body
 	 */
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	protected ResponseEntity handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
@@ -67,7 +67,7 @@ public class GlobalExceptionHandler {
 	 * \ @ModelAttribute 로 값을 받을 때 바인딩 에러 시 발생
 	 *
 	 * @param exception BindException
-	 * @return
+	 * @return ResponseEntity status/body
 	 */
 	@ExceptionHandler({BindException.class})
 	protected ResponseEntity handleBindException(BindException exception) {
@@ -82,7 +82,7 @@ public class GlobalExceptionHandler {
 	 * 자체 정의 에러 발생 시 처리
 	 *
 	 * @param exception CustomException 을 상속하는 모든 자체 정의 에러
-	 * @return
+	 * @return ResponseEntity status/body
 	 */
 	@ExceptionHandler({CustomException.class})
 	protected ResponseEntity handleCustomApiException(CustomException exception) {
@@ -98,7 +98,7 @@ public class GlobalExceptionHandler {
 	 * 상기 정의된 에러 외에 모든 에러에 대한 처리
 	 *
 	 * @param exception Exception
-	 * @return
+	 * @return ResponseEntity status/body
 	 */
 	@ExceptionHandler({Exception.class})
 	protected ResponseEntity handleException(Exception exception) {
