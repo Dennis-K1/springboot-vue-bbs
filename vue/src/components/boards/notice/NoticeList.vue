@@ -37,15 +37,15 @@ export default {
 <script setup>
 import {inject} from "vue";
 
-/**
- * ArticleList 에서 주입 받는 게시글 목록
- */
-const articleList = inject('articleList');
+  /**
+   * ArticleList 에서 주입 받는 게시글 목록
+   */
+  const articleList = inject('articleList');
 
-/**
- * ArticleList 에서 주입 받는 경로명
- */
-const boardPath = inject('boardPath');
+  /**
+   * ArticleList 에서 주입 받는 경로명
+   */
+  const boardPath = inject('boardPath');
 
 </script>
 <style scoped>

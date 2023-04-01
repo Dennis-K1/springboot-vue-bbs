@@ -8,7 +8,7 @@
     </div>
     <div class="row mt-5 mb-2">
       <div class="mb-1 text-muted">최근 게시글 목록</div>
-      <div v-for="(articles, index) in recentArticles" :key="Object.keys(recentArticles)[index]"
+      <div v-for="(articles, index) in recentArticleList" :key="Object.keys(recentArticleList)[index]"
            class="col-md-6 mb-5">
         <div class="card h-100 shadow-sm border">
           <div class="card-body">
@@ -34,13 +34,8 @@ export default {
 <script setup>
 
 
-import apiClient from '/@/modules/apiUtil.js'
-import {computed, onMounted, reactive, ref, watchEffect} from "vue";
-
-/**
- * 최신 게시글 목록
- */
-const recentArticles = ref({});
+import {onMounted} from "vue";
+import {useBoard} from "/@/compositions/useBoard.js";
 
 /**
  * 게시판명
@@ -63,27 +58,14 @@ const boardPath = {
 }
 
 /**
- * 데이터 조회
+ * recentArticleList : 게시판별 최신글 (3개) 목록
+ * getIndex : 데이터 조회
  */
-async function fetchData() {
-  const indexList = await apiClient.get('index');
+const {recentArticleList, getIndex} = useBoard();
 
-  /**
-   * 받아온 게시글을 게시판 번호에 맞추어 재구성
-   */
-  let top3RecentArticlesByEachBoard = indexList.data.top3RecentArticlesByEachBoard;
-  recentArticles.value = top3RecentArticlesByEachBoard.reduce((acc, obj) => {
-    const {boardId, ...rest} = obj;
-    if (!acc[boardId]) {
-      acc[boardId] = [];
-    }
-    acc[boardId].push(rest);
-    return acc;
-  }, {})
-}
 
-onMounted(() => {
-  fetchData();
+onMounted(async () => {
+  await getIndex();
 });
 </script>
 

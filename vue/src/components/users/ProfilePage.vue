@@ -7,29 +7,29 @@
       <table class="mt-3 table table-borderless">
         <tr>
           <th class="w-25 font-weight-bold text-primary">아이디</th>
-                  <td>{{ user.account }}</td>
+          <td>{{ user.account }}</td>
         </tr>
         <tr>
           <th class="w-25 font-weight-bold text-primary">가입일</th>
-                  <td>{{ user.dateRegistered }}</td>
+          <td>{{ user.dateRegistered }}</td>
         </tr>
         <tr>
           <th class="w-25 font-weight-bold text-primary">등록 게시글수</th>
-                  <td>{{ user.countArticle }}</td>
+          <td>{{ user.countArticle }}</td>
         </tr>
       </table>
     </div>
     <div class="fs-3 fw-bold mt-4 text-secondary">
       작성한 게시글 목록
     </div>
-    <div v-if="articleList !== []" class="card bg-white p-4 mt-3">
+    <div v-if="userArticleList !== []" class="card bg-white p-4 mt-3">
       <table class="mt-3 table table-borderless">
         <tr class="font-weight-bold text-primary">
           <th scope="col">제목</th>
           <th scope="col">조회수</th>
           <th scope="col">등록일</th>
         </tr>
-        <tr v-for="article in articleList" :key="article.id">
+        <tr v-for="article in userArticleList" :key="article.id">
           <td>{{ article.title }}</td>
           <td>{{ article.views }}</td>
           <td>{{ article.dateRegistered }}</td>
@@ -51,30 +51,22 @@ export default {
 </script>
 <script setup>
 
-import {onMounted, ref} from "vue";
-import apiClient from "/@/modules/apiUtil.js";
+import {onMounted} from "vue";
+import {useUser} from "/@/compositions/useUser.js";
 
 /**
- * 회원 정보
+ *   user: 회원 정보
+ *   userArticleList: 회원 작성 게시글 목록
+ *   getProfile: 정보 조회
  */
-const user = ref({});
+const {
+  user,
+  userArticleList,
+  getProfile
+} = useUser();
 
-/**
- * 회원 작성 게시글 목록
- */
-const articleList = ref([]);
-
-/**
- * 회원 정보 조회
- */
-async function fetchData() {
-  let response = await apiClient.get('users/profile');
-  articleList.value = response.data.articleList;
-  user.value = response.data.user;
-}
-
-onMounted(() => {
-  fetchData();
+onMounted(async () => {
+  await getProfile();
 })
 
 </script>

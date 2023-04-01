@@ -28,7 +28,7 @@
         </tbody>
       </table>
       <div class="d-flex justify-content-end">
-        <button @click="validation.authenticate(`/${boardPath}/form`)"
+        <button @click="authenticate(`/${boardPath}/form`)"
                 class="btn btn-sm btn-primary" type="button">
           게시글 등록
         </button>
@@ -45,7 +45,9 @@ export default {
 <script setup>
 
 import {inject} from "vue";
-import validation from "/@/components/commons/validation.js";
+import {useValidation} from "/@/compositions/useValidation.js";
+
+const {authenticate} = useValidation();
 
 /**
  * ArticleList 에서 주입 받는 게시글 목록
@@ -56,6 +58,7 @@ const articleList = inject('articleList');
  * ArticleList 에서 주입 받는 경로명
  */
 const boardPath = inject("boardPath");
+
 
 </script>
 

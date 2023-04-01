@@ -24,11 +24,21 @@ export default {
 <script setup>
 
 import {useRoute} from "vue-router";
-import {onMounted, provide, ref} from "vue";
-import apiClient from "/@/modules/apiUtil.js";
+import {computed, onMounted, provide, ref} from "vue";
+import {useBoard} from "/@/compositions/useBoard.js";
+import {useStore} from "vuex";
 
 
 const route = useRoute();
+
+/**
+ * article : 게시글 정보
+ * user : 유저 정보
+ * replyList : 게시글 댓글 목록
+ * getArticle : 게시글 조회
+ * getReply : 댓글 조회
+ */
+const {article, user, replyList, getArticle, getReply} = useBoard();
 
 /**
  * 게시판 경로명
@@ -40,30 +50,6 @@ const boardPath = ref(route.params.path);
  */
 const articleId = ref(route.params.id);
 
-/**
- * 게시글
- */
-const article = ref({});
-
-/**
- * 회원 정보
- */
-const user = ref({});
-
-/**
- * 댓글 목록
- */
-const replyList = ref([]);
-
-/**
- * 로그인된 회원 아이디
- */
-const userLoggedIn = localStorage.getItem('userLoggedIn');
-
-/**
- * 로그인 회원 아이디 주입
- */
-provide('userLoggedIn', userLoggedIn);
 
 /**
  * 게시글 주입
@@ -91,21 +77,11 @@ provide('boardPath', boardPath);
 provide('articleId', articleId);
 
 /**
- * 게시글 조회
- */
-async function fetchData() {
-  let response = await apiClient.get(`${boardPath.value}/${articleId.value}`);
-  article.value = await response.data;
-  user.value = await response.data.user;
-  response = await  apiClient.get(`reply/${articleId.value}`)
-  replyList.value = await response.data;
-}
-
-/**
  * 마운트에 맞추어 데이터 조회
  */
-onMounted( () => {
-  fetchData();
+onMounted( async () => {
+  await getArticle(boardPath.value, articleId.value);
+  await getReply(articleId.value);
 });
 
 </script>

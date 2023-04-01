@@ -41,7 +41,7 @@
           목록
         </button>
       </router-link>
-      <button class="ms-2 btn btn-danger" @click="deleteArticle" v-if="user.account === userLoggedIn">
+      <button class="ms-2 btn btn-danger" @click="deleteArticle(boardPath, article.id)" v-if="user.account === userLoggedIn">
         삭제
       </button>
       <button class="ms-2 btn btn-danger" @click="isArticleDetail = 0" v-if="user.account === userLoggedIn && isArticleDetail === 1">
@@ -64,8 +64,11 @@ export default {
 </script>
 <script setup>
 
-import {inject, ref} from "vue";
-import apiClient from "/@/modules/apiUtil.js";
+import {computed, inject, ref} from "vue";
+import {useBoard} from "/@/compositions/useBoard.js";
+import {useStore} from "vuex";
+
+const {deleteArticle} = useBoard();
 
 /**
  * ArticleDetail 에서 주입 받은 게시글 정보
@@ -82,21 +85,21 @@ const boardPath = inject('boardPath');
  */
 const user = inject('user');
 
-/**
- * ArticleDetail 에서 주입 받은 로그인 회원 아이디
- */
-const userLoggedIn = inject('userLoggedIn');
 
-const isArticleDetail = ref(1);
 /**
- * 게시글 삭제 (작성자 회원에게만 보임)
+ * 로그인된 회원 아이디
  */
-const deleteArticle = async () => {
-  let response = await apiClient.delete(`${boardPath.value}/${article.value.id}`);
-  if (response.success) {
-    location.replace(`/${boardPath.value}`);
-  }
-}
+const store = useStore();
+const userLoggedIn = computed(()=>{
+  return store.getters.getUser;
+})
+
+/**
+ * 1: 상세화면, 0: 수정화면
+ */
+const isArticleDetail = ref(1);
+
+
 </script>
 <style scoped>
 
