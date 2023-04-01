@@ -6,10 +6,26 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul :class="{'navbar-nav':true, 'me-auto':menu.me_auto}"
-            v-for="menu in menuCategory"
-            :key="menu.id">
-          <li class="nav-item" v-for="menu in menu.value" :key="menu.key">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item" v-for="menu in leftMenus" :key="menu.key">
+            <router-link :to="menu.url" class="nav-link">
+              {{menu.value}}
+            </router-link>
+          </li>
+        </ul>
+        <ul v-if="isLoggedIn" class="navbar-nav">
+          {{store.getters.getUser}}
+          <li class="nav-item" v-for="menu in rightMenusAfterLogin" :key="menu.key">
+            <router-link v-if="menu.key !== 'logout'" :to="menu.url" class="nav-link">
+              {{menu.value}}
+            </router-link>
+            <a v-else @click="logout" class="nav-link" style="cursor:pointer">
+              {{menu.value}}
+            </a>
+          </li>
+        </ul>
+        <ul v-else class="navbar-nav">
+          <li class="nav-item" v-for="menu in rightMenusBeforeLogin" :key="menu.key">
             <router-link :to="menu.url" class="nav-link">
               {{menu.value}}
             </router-link>
@@ -27,74 +43,71 @@ export default {
 </script>
 
 <script setup>
-import {computed, inject, ref} from "vue";
+import {computed} from "vue";
+import {useStore} from "vuex";
+import {useUser} from "/@/compositions/useUser.js";
 
 /**
- * jwt 로 로그인 여부 확인
+ * 로그아웃 펑션
  */
-const isLoggedIn = ref(localStorage.getItem('jwt'));
+const {logout} = useUser();
 
 /**
- * 네비게이션 바 메뉴, position:표시 위치
+ * 유저 정보 저장소
  */
-const menus = [
+const store = useStore();
+
+/**
+ * 네비게이션 바 일반 메뉴 (왼쪽)
+ */
+const leftMenus = [
   {
-    key: 'home', value: '홈', url: '/', position: 'left'
+    key: 'home', value: '홈', url: '/'
   },
   {
-    key: 'notice', value: '공지사항', url: '/notice', position: 'left'
+    key: 'notice', value: '공지사항', url: '/notice'
   },
   {
-    key: 'community', value: '자유게시판', url: '/community', position: 'left'
+    key: 'community', value: '자유게시판', url: '/community'
   },
   {
-    key: 'inquiry', value: '1:1문의', url: '/inquiry', position: 'left'
+    key: 'inquiry', value: '1:1문의', url: '/inquiry'
   },
   {
-    key: 'gallery', value: '갤러리', url: '/gallery', position: 'left'
-  },
-  {
-    key: 'profile', value: '마이페이지', url: '/profile', position: 'right'
-  },
-  {
-    key: 'logout', value: '로그아웃', url: '/logout', position: 'right'
-  },
-  {
-    key: 'login', value: '로그인', url:'/login', position: 'right'
-  },
-  {
-    key: 'signup', value: '회원가입', url:'/signup', position: 'right'
+    key: 'gallery', value: '갤러리', url: '/gallery'
   }
 ]
 
 /**
- * 왼쪽 표시 메뉴
+ * 네비게이션 바 로그인 전 메뉴 (오른쪽)
  */
-const leftMenus = computed(() => menus.filter((menu) => menu.position === 'left'));
-
-/**
- * 오른쪽 표시 메뉴
- */
-const rightMenus = computed(() => {
-  if (isLoggedIn.value !== null) {
-    return menus.filter((menu) => menu.key === 'profile' || menu.key === 'logout');
-  } else {
-    return menus.filter((menu) => menu.key === 'login' || menu.key === 'signup');
+const rightMenusBeforeLogin = [
+  {
+    key: 'login', value: '로그인', url:'/login'
+  },
+  {
+    key: 'signup', value: '회원가입', url:'/signup'
   }
-});
+]
 
 /**
- * 메뉴 모음
+ * 네비게이션 바 로그인 후 메뉴 (오른쪽)
  */
-const menuCategory = [
+const rightMenusAfterLogin = [
   {
-    id: 1, me_auto:true, value: leftMenus.value
+    key: 'profile', value: '마이페이지', url: '/profile'
   },
   {
-    id: 2, me_auto:false, value: rightMenus.value
+    key: 'logout', value: '로그아웃', url: '/logout'
   },
-];
+]
 
+/**
+ * Store 에 userAccount 가 저장되어 있는지 여부로 유저 로그인 여부 확인
+ */
+const isLoggedIn = computed(() => {
+  return store.state.userAccount !== null;
+});
 
 </script>
 

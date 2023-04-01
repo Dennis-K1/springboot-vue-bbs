@@ -59,6 +59,11 @@ export function useUser() {
    * @param redirectURL 로그인 버튼 클릭 시점 경로
    */
   const login = async (redirectURL) => {
+    validateAccount(account.value)
+    validatePassword(password.value)
+    if (userValidationErrorMessage.value.account !== '' || userValidationErrorMessage.value.password !== '') {
+      return;
+    }
     try {
       let response = await apiClient.post('users/login',
           {account: account.value, password: password.value});
