@@ -15,7 +15,7 @@
         <tbody>
         <tr v-for="article in articleList" :key="article.id">
           <td>{{ article.user.account }}</td>
-          <td>
+          <td class="text-start">
             <router-link :to="`/${boardPath}/${article.id}`">
               {{ article.title }}
             </router-link>

@@ -1,7 +1,7 @@
 <template>
   <main class="container mb-5">
     <div class="table-responsive">
-      <table class="table text-center table-borderless">
+      <table class="table table-borderless text-center">
         <thead>
         <tr class="font-weight-bold text-primary">
           <th>작성자</th>
@@ -14,9 +14,9 @@
         <tbody>
         <tr v-for="article in articleList" :key="article.id">
           <td>{{ article.user.account }}</td>
-          <td>
+          <td class="text-start">
             <router-link :to="`/${boardPath}/${article.id}`">
-            {{ article.title }}
+              {{ article.title }}
             </router-link>
           </td>
           <td>{{ article.fileAttached }}</td>

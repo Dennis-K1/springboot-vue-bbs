@@ -6,20 +6,20 @@
         <tr class="font-weight-bold text-primary">
           <th>작성자</th>
           <th>제목</th>
-          <th>게시글 답변 여부</th>
+          <th>답변 여부</th>
           <th>등록일</th>
         </tr>
         </thead>
         <tbody>
         <tr v-for="article in articleList" :key="article.id">
           <td>{{ article.user.account }}</td>
-          <td>
+          <td class="text-start">
             <router-link :to="`/${boardPath}/${article.id}`">
               {{ article.title }}
             </router-link>
           </td>
-          <td v-if="article.replyList.length > 0" class="text-primary">답변 완료</td>
-          <td v-else class="text-danger">미답변</td>
+          <td v-if="article.replyList.length > 0" class="text-primary text-center">답변 완료</td>
+          <td v-else class="text-danger text-center">미답변</td>
           <td>{{ article.dateRegistered }}</td>
         </tr>
         </tbody>
