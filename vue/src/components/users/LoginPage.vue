@@ -1,4 +1,5 @@
 <template>
+  <form @submit.prevent>
   <main class="container d-flex justify-content-center align-items-center vh-100">
     <div class="row g-3">
       <div class="col-12">
@@ -22,6 +23,7 @@
       </div>
     </div>
   </main>
+  </form>
 </template>
 
 <script>

@@ -1,11 +1,12 @@
 <template>
   <main class="container d-flex justify-content-center align-items-center vh-100">
+    <form>
     <div class="row g-3">
       <div class="col-12">
         <label for="account" class="form-label">아이디 :</label>
         <div class="form-floating">
           <input v-model="account" type="text" class="form-control" autocomplete="off">
-          <button @click="checkAccountAvailability" class="btn btn-danger d-flex float-end mt-2">아이디
+          <button type="button" @click="checkAccountAvailability" class="btn btn-danger d-flex float-end mt-2">아이디
             중복확인
           </button>
           <span v-if="userValidationErrorMessage.account"
@@ -32,6 +33,7 @@
         <button @click="register" type="button" class="btn btn-primary w-100">회원가입</button>
       </div>
     </div>
+    </form>
   </main>
 </template>
 
