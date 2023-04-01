@@ -15,12 +15,12 @@ export function useBoard() {
    */
   const {
     articleValidationErrorMessage,
-      replyValidationErrorMessage,
+    replyValidationErrorMessage,
     validateTitle,
     validateContent,
-      validateReply,
-      validateNestedReply,
-      authenticate,
+    validateReply,
+    validateNestedReply,
+    authenticate,
   } = useValidation();
 
   /**
@@ -109,170 +109,172 @@ export function useBoard() {
       article.value = response.data.data;
       user.value = response.data.data.user;
     } catch (error) {
-      console.log(error)
+      alert(error.response.data.message)
+      await router.go(-1);
     }
   }
 
-  /**
-   * 댓글 조회
-   *
-   * @param articleId 대상 댓글이 적힌 게시글
-   */
-  const getReply = async (articleId) => {
+/**
+ * 댓글 조회
+ *
+ * @param articleId 대상 댓글이 적힌 게시글
+ */
+const getReply = async (articleId) => {
+  try {
+    const response = await apiClient.get(`reply/${articleId}`);
+    replyList.value = response.data.data;
+  } catch (error) {
+    alert(error.response.data.message)
+    await router.go(-1);
+  }
+}
+
+/**
+ * 게시글 등록
+ * 성공 시 해당 게시글 상세페이지로 이동
+ */
+const registerArticle = async (boardPath, file) => {
+  validateTitle(articleInput.value.title);
+  validateContent(articleInput.value.content);
+
+  if (articleValidationErrorMessage.value.title === ''
+      && articleValidationErrorMessage.value.content === '') {
+    const formData = new FormData();
+    formData.append('title', articleInput.value.title);
+    formData.append('content', articleInput.value.content);
+    formData.append('file', file);
     try {
-      const response = await apiClient.get(`reply/${articleId}`);
-      replyList.value = response.data.data;
+      const response = await apiClient.post(boardPath, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data; charset=utf-8'
+        }
+      });
+      await router.replace(`/${boardPath}/${response.data.data}`)
     } catch (error) {
-      console.log(error)
+      alert(error.response.data.message);
     }
   }
+}
 
-  /**
-   * 게시글 등록
-   * 성공 시 해당 게시글 상세페이지로 이동
-   */
-  const registerArticle = async (boardPath, file) => {
-    validateTitle(articleInput.value.title);
-    validateContent(articleInput.value.content);
+/**
+ * 게시글 등록
+ * 성공 시 해당 게시글 상세페이지로 이동
+ */
+const editArticle = async (boardPath, articleEdit, file) => {
+  validateTitle(articleEdit.title);
+  validateContent(articleEdit.content);
 
-    if (articleValidationErrorMessage.value.title === ''
-        && articleValidationErrorMessage.value.content === '') {
-      const formData = new FormData();
-      formData.append('title', articleInput.value.title);
-      formData.append('content', articleInput.value.content);
+  if (articleValidationErrorMessage.value.title === ''
+      && articleValidationErrorMessage.value.content === '') {
+    const formData = new FormData();
+    formData.append('title', articleEdit.title);
+    formData.append('content', articleEdit.content);
+
+    if (articleEdit.newImage === 1) {
       formData.append('file', file);
-      try {
-        const response = await apiClient.post(boardPath, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data; charset=utf-8'
-          }
-        });
-        await router.replace(`/${boardPath}/${response.data.data}`)
-      } catch (error) {
-        alert(error.response.data.message);
-      }
     }
-  }
 
-  /**
-   * 게시글 등록
-   * 성공 시 해당 게시글 상세페이지로 이동
-   */
-  const editArticle = async (boardPath, articleEdit, file) => {
-    validateTitle(articleEdit.title);
-    validateContent(articleEdit.content);
-
-    if (articleValidationErrorMessage.value.title === ''
-        && articleValidationErrorMessage.value.content === '') {
-      const formData = new FormData();
-      formData.append('title', articleEdit.title);
-      formData.append('content', articleEdit.content);
-
-      if (articleEdit.newImage === 1) {
-        formData.append('file', file);
-      }
-
-      try {
-        const response = await apiClient.put(
-            `/${boardPath}/${articleEdit.articleId}`,
-            formData, {
-              headers: {
-                'Content-Type': 'multipart/form-data; charset=utf-8'
-              }
-            });
-        await router.go(0);
-      } catch (error) {
-        console.log(error.response.data.message)
-      }
-    }
-  }
-
-  /**
-   * 게시글 삭제 (작성자 회원에게만 보임)
-   */
-  const deleteArticle = async (boardPath, articleId) => {
     try {
-      const response = await apiClient.delete(`${boardPath}/${articleId}`);
-      await router.replace(`/${boardPath}`);
+      const response = await apiClient.put(
+          `/${boardPath}/${articleEdit.articleId}`,
+          formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data; charset=utf-8'
+            }
+          });
+      await router.go(0);
     } catch (error) {
-      console.log(error)
+      console.log(error.response.data.message)
     }
   }
+}
 
-  /**
-   * 댓글 등록
-   *
-   * @param reply 댓글 정보
-   */
-  const inputReply = async (reply) => {
-    await authenticate('reply', true);
-    validateReply(reply.content)
-    if (replyValidationErrorMessage.value.reply !== '') {
-      return;
-    }
-    try {
-      const response = await apiClient.post('reply', reply);
-      router.go(0);
-    } catch (error) {
-      console.log(error)
-    }
+/**
+ * 게시글 삭제 (작성자 회원에게만 보임)
+ */
+const deleteArticle = async (boardPath, articleId) => {
+  try {
+    const response = await apiClient.delete(`${boardPath}/${articleId}`);
+    await router.replace(`/${boardPath}`);
+  } catch (error) {
+    console.log(error)
   }
+}
 
-  /**
-   * 대댓글 등록
-   *
-   * @param nestedReply 대댓글 정보
-   * @param replyId 대댓글이 달린 댓글 번호
-   */
-  const inputNestedReply = async (nestedReply, replyId) => {
-    await authenticate('reply', true);
-    validateNestedReply(nestedReply.content)
-    if (replyValidationErrorMessage.value.nestedReply !== '') {
-      return;
-    }
-    try {
-      nestedReply.replyId = replyId;
-      const response = await apiClient.post('reply', nestedReply);
-      router.go(0);
-    } catch (error) {
-      console.log(error)
-    }
+/**
+ * 댓글 등록
+ *
+ * @param reply 댓글 정보
+ */
+const inputReply = async (reply) => {
+  await authenticate('reply', true);
+  validateReply(reply.content)
+  if (replyValidationErrorMessage.value.reply !== '') {
+    return;
   }
+  try {
+    const response = await apiClient.post('reply', reply);
+    router.go(0);
+  } catch (error) {
+    console.log(error)
+  }
+}
 
-  /**
-   * 댓글 삭제
-   *
-   * @param replyId 댓글 번호
-   */
-  const deleteReply = async (replyId) => {
-    try {
-      const response = await apiClient.delete(`reply/${replyId}`);
-      router.go(0)
-    } catch (error) {
-      console.log(error)
-    }
+/**
+ * 대댓글 등록
+ *
+ * @param nestedReply 대댓글 정보
+ * @param replyId 대댓글이 달린 댓글 번호
+ */
+const inputNestedReply = async (nestedReply, replyId) => {
+  await authenticate('reply', true);
+  validateNestedReply(nestedReply.content)
+  if (replyValidationErrorMessage.value.nestedReply !== '') {
+    return;
   }
+  try {
+    nestedReply.replyId = replyId;
+    const response = await apiClient.post('reply', nestedReply);
+    router.go(0);
+  } catch (error) {
+    console.log(error)
+  }
+}
 
-  return {
-    articleList,
-    pageParameters,
-    article,
-    user,
-    replyList,
-    recentArticleList,
-    articleInput,
-    articleValidationErrorMessage,
-    replyValidationErrorMessage,
-    authenticate,
-    getIndex,
-    getArticleList,
-    getArticle,
-    getReply,
-    registerArticle,
-    deleteArticle,
-    inputReply,
-    inputNestedReply,
-    deleteReply,
-    editArticle
+/**
+ * 댓글 삭제
+ *
+ * @param replyId 댓글 번호
+ */
+const deleteReply = async (replyId) => {
+  try {
+    const response = await apiClient.delete(`reply/${replyId}`);
+    router.go(0)
+  } catch (error) {
+    console.log(error)
   }
+}
+
+return {
+  articleList,
+  pageParameters,
+  article,
+  user,
+  replyList,
+  recentArticleList,
+  articleInput,
+  articleValidationErrorMessage,
+  replyValidationErrorMessage,
+  authenticate,
+  getIndex,
+  getArticleList,
+  getArticle,
+  getReply,
+  registerArticle,
+  deleteArticle,
+  inputReply,
+  inputNestedReply,
+  deleteReply,
+  editArticle
+}
 }

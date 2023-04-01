@@ -73,7 +73,7 @@ export function useUser() {
         await router.replace(redirectURL);
       }
     } catch (error) {
-      console.log(error)
+      alert(error.response.data.message);
     }
   }
 
