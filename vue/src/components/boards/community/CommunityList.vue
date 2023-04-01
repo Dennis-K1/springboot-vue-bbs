@@ -20,7 +20,8 @@
               {{ article.title }}
             </router-link>
           </td>
-          <td>{{ article.fileAttached }}</td>
+          <td v-if="article.fileAttached === true">🔗</td>
+          <td v-else></td>
           <td>{{ article.replyList.length }}</td>
           <td>{{ article.views }}</td>
           <td>{{ article.dateRegistered }}</td>

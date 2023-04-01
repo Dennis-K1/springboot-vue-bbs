@@ -19,7 +19,8 @@
               {{ article.title }}
             </router-link>
           </td>
-          <td>{{ article.fileAttached }}</td>
+          <td v-if="article.fileAttached === true">🔗</td>
+          <td v-else></td>
           <td>{{ article.views }}</td>
           <td>{{ article.dateRegistered }}</td>
         </tr>
