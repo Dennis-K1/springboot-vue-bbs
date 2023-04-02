@@ -24,7 +24,7 @@
             :class="{ pageButtonClicked: page === pageParameters.pageNumber, pageButton: page !== pageParameters.pageNumber }">
       {{ page }}
     </button>
-    <button v-if="pageParameters.pageNumber !== pageParameters.endPage && pageParameters.pageNumber !== 1"
+    <button v-if="pageParameters.pageNumber !== pageParameters.endPage && pageParameters.pageNumber !== 0"
             @click="toPageOf(pageParameters.pageNumber + 1)"
             class="pageButton">
       &gt;
