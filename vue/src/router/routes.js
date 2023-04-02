@@ -13,6 +13,9 @@ const routes = [
     path: '/:path',
     name: 'board',
     component: BoardContainer,
+    meta: {
+      boardPath: ['notice', 'inquiry', 'gallery', 'community']
+    },
     children: [
       {
         path: '',
@@ -20,20 +23,34 @@ const routes = [
       },
       {
         path: ':id',
-        component: ArticleDetail
+        component: ArticleDetail,
       },
       {
         path: 'form',
         component: ArticleInputForm,
+        meta: {
+          formPath: ['community', 'inquiry']
+        }
       },
     ],
   },
   {
     path: '/profile', name: 'profile', component: ProfilePage,
+    meta: {
+      requiresLogin: true
+    }
   },
-  {path: '/signup', name: 'signup', component: SignupPage},
+  {
+    path: '/signup', name: 'signup', component: SignupPage,
+    meta: {
+      requiresLogout: true
+    }
+  },
   {
     path: '/login', name: 'login', component: LoginPage,
+    meta: {
+      requiresLogout: true
+    }
   },
   {path: '/', name: 'home', component: HomePage},
   {path: '/:catchAll(.*)', name: 'notFound', component: NotFound}
