@@ -77,7 +77,9 @@
 
   <select id="getUserById" resultType="com.bbs.domain.User">
     SELECT
-        *
+        id, role_id, account,
+        date_registered, count_visit,
+        count_article, date_last_login
     FROM
         user
     WHERE
