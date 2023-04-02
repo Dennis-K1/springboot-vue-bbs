@@ -56,9 +56,11 @@ export default {
 </script>
 <script setup>
 
-import {useRoute} from "vue-router";
+import {useRoute, useRouter} from "vue-router";
 import {useBoard} from "/@/compositions/useBoard.js";
 import {useFile} from "/@/compositions/useFile.js";
+import {useStore} from "vuex";
+import {watchEffect} from "vue";
 
 const route = useRoute();
 
@@ -90,6 +92,17 @@ const {
  * 게시판 경로
  */
 const boardPath = route.path.split('/')[1];
+
+const store = useStore();
+const router = useRouter();
+
+watchEffect(() => {
+  if (!store.state.token) {
+    alert('로그인 후 이용 가능합니다.');
+    router.replace(`/login?redirectURL=${route.path}`);
+  }
+});
+
 
 </script>
 
