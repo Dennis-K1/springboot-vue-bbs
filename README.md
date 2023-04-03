@@ -45,8 +45,8 @@
 
 
 <hr>
-#
-## 1. 회원 기능
+
+### 1. 회원 기능
   - [x] 로그인 
     - B/E: 유저 검증 후 jwt 발행
     - F/E: 입력값 유효성 검증, Vuex를 활용하여 jwt 및 사용자 정보 암호화하여 저장
@@ -62,10 +62,7 @@
   - [x] 로그인 필요 서비스
     - B/E: 토큰 및 유저 유효성 검증
     - F/E: vue router BeforeEach,meta 와 jwt 를 활용하여 로그인 여부 검증
-
-<hr>
-#
-## 2. 게시판 기능
+### 2. 게시판 기능
   - [x] 검색 (공통 검색 컴포넌트)
     - Etc: 검색 키워드, 카테고리, 시작일, 종료일, 페이지 번호
   - [x] 페이징 (공통 페이징 컴포넌트)
@@ -76,10 +73,7 @@
   - [x] 자유게시판 (게시글 작성, 이미지 업로드, 댓글 및 대댓글 작성 기능)
   - [x] 1:1 문의 (문의 작성 및 답변 여부 확인 기능이 있는 게시판)
   - [x] 갤러리 (3가지 뷰 모드가 있는 이미지 게시판)
-
-<hr>
-#
-## 3. 기타
+### 3. 기타
   - [x] redirectURL (인덱스가 아닌 다른 경로로 접속 시도시, 로그인 후 접속 시도한 페이지로 이동)
   - [x] 클라이언트/서버 유효성 검증
   - [x] Custom API Response
@@ -87,16 +81,11 @@
   - [x] GlobalExceptionHandler
     - B/E: @Validated 유효성 검증 실패시 필드와 오류 내용 반환
 
-
-
 <hr>
 
 ## 서비스 구조
 
-
-<hr>
-#
-## 백엔드 (SpringBoot)
+### 백엔드 (SpringBoot)
 <img src="README_IMAGE/back_springboot_architecture.png" width="80%">
 
 <br>
@@ -167,10 +156,7 @@
 
 <br>
 
-
-<hr>
-#
-## 프론트엔드 (Vue)
+### 프론트엔드 (Vue)
 <img src="README_IMAGE/front_vue_architecture.png" width="80%">
 
 <br>
@@ -247,17 +233,11 @@
 
 <br>
 
-
-
-
 <hr>
 
 ## API 설계
 
-
-<hr>
-#
-## API 경로 및 설명
+### API 경로 및 설명
 <img src="README_IMAGE/api_list.png">
 
 ```markdown
@@ -279,9 +259,7 @@
 <br>
 
 
-<hr>
-#
-## API 응답 포맷
+### API 응답 포맷
 <img src="README_IMAGE/api_response.png">
 
 ```http request
@@ -317,9 +295,7 @@ HTTP/1.1 400 Bad Request
 <br>
 
 
-<hr>
-#
-## API 문서
+### API 문서
 https://documenter.getpostman.com/view/25393000/2s93RQUubD
 
 
