@@ -5,7 +5,10 @@
 기존에 Servlet과 JSP를 활용하여 개발했던 멀티 게시판 MPA 관리자 웹을, 스프링 부트와 뷰로 재구성한  SPA 클라이언트 웹으로 기본적인 게시판 기능과 회원 기능을 갖고 있습니다.</br>
 (Servlet-JSP 관리자 웹 : https://github.com/Dennis-K1/servlet-jsp-bbs)
 <br>
-<br>기술 스택:
+
+개발 기간: 3주 </br>
+개발 인원: 1명 </br>
+기술 스택:
 - 백엔드 &nbsp; &nbsp; &nbsp; &nbsp;: Java, SpringBoot, MyBatis, MariaDB
 - 프론트엔드 : Javascript, Vue3 (Composition Api), Axios 
 - 배포 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;: GCP, Ubuntu
@@ -23,9 +26,9 @@
 ## 목차
 
 * [핵심 기능](#핵심-기능)
-  * [1. 회원 기능](#1.-회원-기능)
-  * [2. 게시판 기능](#2.-게시판-기능)
-  * [3. 기타](#3.-기타)
+  * [1. 회원 기능](#1-회원-기능)
+  * [2. 게시판 기능](#2-게시판-기능)
+  * [3. 기타](#3-기타)
 * [서비스 구조](#서비스-구조)
   * [백엔드 (SpringBoot)](#백엔드-(SpringBoot))
   * [프론트엔드 (Vue)](#프론트엔드-(Vue))
@@ -34,6 +37,9 @@
   * [API 응답 포맷](#API-응답-포맷)
   * [API 문서](#API-문서)
 * [코드 샘플](#코드-샘플)
+  * [Javadoc](#Javadoc)
+  * [백엔드](#백엔드)
+  * [프론트엔드](#프론트엔드)
 * [ERD](#ERD)
 * [마무리](#마무리)
 
@@ -42,6 +48,7 @@
 <hr>
 
 ## 핵심 기능
+> 프로젝트 핵심 구현 기능 및 방법
 
 ### 1. 회원 기능
   - [x] 로그인 
@@ -81,6 +88,7 @@
 <hr>
 
 ## 서비스 구조
+> 프로젝트 애플리케이션 서비스 구조도
 
 ### 백엔드 (SpringBoot)
 <img src="README_IMAGE/back_springboot_architecture.png" width="70%">
@@ -155,6 +163,8 @@
 
 ### 프론트엔드 (Vue)
 <img src="README_IMAGE/front_vue_architecture.png" width="70%">
+
+> 비즈니스 로직은 각 도메인 컴포저블로 관리
 
 <br>
 
@@ -234,6 +244,8 @@
 
 ## API 설계
 
+>   프로젝트 REST API 설계 및 예시
+
 ### API 경로 및 설명
 <img src="README_IMAGE/api_list.png"  width="70%">
 
@@ -299,6 +311,15 @@ https://documenter.getpostman.com/view/25393000/2s93RQUubD
 <hr>
 
 ## 코드 샘플
+>   프로젝트 주요 코드 샘플
+
+### Javadoc
+https://dennis-k1.github.io/springboot-vue-bbs/javadoc/
+
+<br>
+
+### 백엔드
+### 프론트엔드
 
 
 <hr>
