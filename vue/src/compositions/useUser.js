@@ -90,7 +90,7 @@ export function useUser() {
    */
   const getProfile = async () => {
     const response = await apiClient.get('users/profile');
-    userArticleList.value = response.data.data.ArticleList;
+    userArticleList.value = response.data.data.articleList;
     user.value = response.data.data.user;
   }
 
@@ -110,6 +110,7 @@ export function useUser() {
       if (response.status === 200) {
         isAccountAvailable.value = true;
         userValidationErrorMessage.value.account = '';
+        alert('사용 가능한 아이디입니다.');
       }
     } catch (error) {
       isAccountAvailable.value = false;

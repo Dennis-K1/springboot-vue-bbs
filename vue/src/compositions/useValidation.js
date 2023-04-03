@@ -172,8 +172,7 @@ export function useValidation() {
       userValidationErrorMessage.value.password =  "비밀번호는 특수문자( '!,@,$,%,^,&,*' 만 허용), 영문 대소문자, 숫자를 포함하여 4글자 이상 16글자 미만으로 입력해주세요.";
       return ;
     }
-    if (!password.match(
-        /([a-zA-Z0-9].*[!,@,#,$,%,^,&,*,?,_,~])|([!,@,#,$,%,^,&,*,?,_,~].*[a-zA-Z0-9])/)) {
+    if (!password.match(/^[a-zA-Z0-9!@\$%\^&\*]+$/)) {
       userValidationErrorMessage.value.password =  "비밀번호는 특수문자( '!,@,$,%,^,&,*' 만 허용), 영문 대소문자, 숫자를 포함하여 4글자 이상 16글자 미만으로 입력해주세요.";
       return ;
     }

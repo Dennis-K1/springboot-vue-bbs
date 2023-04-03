@@ -44,7 +44,7 @@ public class User {
 	 */
 	@NotBlank
 	@Length(min = 4, max = 15)
-	@Pattern(regexp = "([a-zA-Z0-9].*[!,@,#,$,%,^,&,*,?,_,~])|([!,@,#,$,%,^,&,*,?,_,~].*[a-zA-Z0-9])")
+	@Pattern(regexp = "^[a-zA-Z0-9!@\\$%\\^&\\*]+$")
 	private String password;
 
 	/**
