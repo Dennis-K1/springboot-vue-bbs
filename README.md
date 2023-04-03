@@ -43,9 +43,6 @@
 
 ## 핵심 기능
 
-
-<hr>
-
 ### 1. 회원 기능
   - [x] 로그인 
     - B/E: 유저 검증 후 jwt 발행
@@ -86,7 +83,7 @@
 ## 서비스 구조
 
 ### 백엔드 (SpringBoot)
-<img src="README_IMAGE/back_springboot_architecture.png" width="80%">
+<img src="README_IMAGE/back_springboot_architecture.png" width="70%">
 
 <br>
 
@@ -157,7 +154,7 @@
 <br>
 
 ### 프론트엔드 (Vue)
-<img src="README_IMAGE/front_vue_architecture.png" width="80%">
+<img src="README_IMAGE/front_vue_architecture.png" width="70%">
 
 <br>
 
@@ -238,7 +235,7 @@
 ## API 설계
 
 ### API 경로 및 설명
-<img src="README_IMAGE/api_list.png">
+<img src="README_IMAGE/api_list.png"  width="70%">
 
 ```markdown
 - 인증 필요 : 로그인이 필요한 경로 표시
@@ -260,7 +257,7 @@
 
 
 ### API 응답 포맷
-<img src="README_IMAGE/api_response.png">
+<img src="README_IMAGE/api_response.png"  width="70%">
 
 ```http request
 // 예: API 응답 성공
@@ -307,7 +304,7 @@ https://documenter.getpostman.com/view/25393000/2s93RQUubD
 <hr>
 
 ## ERD
-<img src="README_IMAGE/application_erd.png">
+<img src="README_IMAGE/application_erd.png"  width="70%">
 
 - Article 
   - 게시글 데이터 
