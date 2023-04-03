@@ -61,7 +61,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 
 		// 토큰값 검증
 		String authorizationHeader = request.getHeader("Authorization");
-		if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+		if (authorizationHeader != null && !authorizationHeader.startsWith("Bearer ")) {
 			throw new AccessDeniedException();
 		}
 
