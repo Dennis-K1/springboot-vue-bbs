@@ -14,7 +14,7 @@
           </li>
         </ul>
         <ul v-if="isLoggedIn" class="navbar-nav">
-          {{store.getters.getUser}}
+          <span class="m-1 text-light">{{store.getters.getUser}}</span>
           <li class="nav-item" v-for="menu in rightMenusAfterLogin" :key="menu.key">
             <router-link v-if="menu.key !== 'logout'" :to="menu.url" class="nav-link">
               {{menu.value}}

@@ -26,9 +26,11 @@
       </tr>
       <tr>
         <th class="w-25 font-weight-bold text-primary">이미지</th>
-        <td v-if="article.image !== undefined"><img :src="'data:image/jpg;base64,'+article.image"
-                                                    width="240"
-                                                    height="300"/></td>
+        <td v-if="article.image !== undefined">
+          <div class="image-container">
+            <img :src="'data:image/jpg;base64,'+article.image" class="article-image"/>
+          </div>
+        </td>
         <td v-else>이미지 없음</td>
       </tr>
     </table>
@@ -102,5 +104,18 @@ const isArticleDetail = ref(1);
 
 </script>
 <style scoped>
+.image-container {
+  width: 240px;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
 
+.article-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
 </style>

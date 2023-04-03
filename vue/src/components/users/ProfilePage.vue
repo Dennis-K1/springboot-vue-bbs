@@ -11,7 +11,7 @@
         </tr>
         <tr>
           <th class="w-25 font-weight-bold text-primary">가입일</th>
-          <td>{{ user.dateRegistered }}</td>
+          <td>{{ userRegistered }}</td>
         </tr>
         <tr>
           <th class="w-25 font-weight-bold text-primary">등록 게시글수</th>
@@ -51,7 +51,7 @@ export default {
 </script>
 <script setup>
 
-import {onMounted} from "vue";
+import {onMounted, ref} from "vue";
 import {useUser} from "/@/compositions/useUser.js";
 
 /**
@@ -65,8 +65,11 @@ const {
   getProfile
 } = useUser();
 
+const userRegistered = ref('');
+
 onMounted(async () => {
   await getProfile();
+  userRegistered.value = user.value.dateRegistered.substring(0, 10);
 })
 
 </script>

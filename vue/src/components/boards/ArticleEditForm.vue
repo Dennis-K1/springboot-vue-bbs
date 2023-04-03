@@ -29,10 +29,10 @@
         이미지
       </th>
       <td v-if="previousImage !== undefined">
-        <img :src="'data:image/jpg;base64,'+previousImage"
-             width="240"
-             height="300"/>
-        <button @click="previousImage = undefined">삭제</button>
+        <div class="image-container">
+          <img :src="'data:image/jpg;base64,'+article.image" class="article-image"/>
+        </div>
+          <button class="ms-auto btn bg-danger text-light" type="button" @click="previousImage = undefined">이미지 삭제</button>
       </td>
       <td v-else class="w-25"><input @change="addImage"
                                      @click="articleEdit.newImage = 1"
@@ -96,5 +96,18 @@ const articleEdit = ref({
 </script>
 
 <style scoped>
+.image-container img{
+  width: 240px;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
 
+.article-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
 </style>

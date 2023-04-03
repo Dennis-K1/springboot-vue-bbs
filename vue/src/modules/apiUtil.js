@@ -4,7 +4,7 @@ import store from "/@/modules/store.js";
 /**
  * api 요청 주소
  */
-const baseURL = 'http://localhost:8080/api/v1';
+const baseURL = 'http://34.64.151.93:8080/api/v1';
 
 /**
  * 요청 axios 객체

@@ -24,9 +24,8 @@ export default {
 <script setup>
 
 import {useRoute} from "vue-router";
-import {computed, onMounted, provide, ref} from "vue";
+import {onMounted, provide, ref} from "vue";
 import {useBoard} from "/@/compositions/useBoard.js";
-import {useStore} from "vuex";
 
 
 const route = useRoute();

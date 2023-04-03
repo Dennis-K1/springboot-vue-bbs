@@ -1,6 +1,6 @@
 <template>
   <main class="container">
-    <div class="p-4 p-md-5 mb-4 text-white bg-primary mt-5">
+    <div class="p-4 p-md-5 mb-4 text-primary bg-light mt-5">
       <div class="col-md-6 px-0">
         <h1 class="display-6 fst-italic">Backend : Spring Boot</h1>
         <h1 class="display-6 fst-italic">Frontend : Vue.js</h1>
@@ -13,7 +13,11 @@
            class="col-md-6 mb-5">
         <div class="card h-100 shadow-sm border">
           <div class="card-body">
-            <div class="text-center bg-primary text-light p-2 mb-3">{{ boardNames[index] }}</div>
+            <router-link :to="boardPath[index]">
+              <div class="text-center bg-primary text-light p-2 mb-3">
+                {{ boardNames[index] }}
+              </div>
+            </router-link>
             <div class="d-flex justify-content-between align-items-center text-center">
               <span class="text-primary ms-2 fw-bold">제목</span>
               <span class="text-primary me-3 mb-2 fw-bold">등록일</span>
