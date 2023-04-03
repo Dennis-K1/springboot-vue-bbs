@@ -1,0 +1,10 @@
+com.bbs
+com.bbs.common
+com.bbs.config
+com.bbs.controller
+com.bbs.domain
+com.bbs.exception
+com.bbs.interceptor
+com.bbs.mapper
+com.bbs.service
+com.bbs.validation
