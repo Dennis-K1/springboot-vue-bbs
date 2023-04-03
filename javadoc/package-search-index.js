@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"com.bbs"},{"l":"com.bbs.common"},{"l":"com.bbs.config"},{"l":"com.bbs.controller"},{"l":"com.bbs.domain"},{"l":"com.bbs.exception"},{"l":"com.bbs.interceptor"},{"l":"com.bbs.mapper"},{"l":"com.bbs.service"},{"l":"com.bbs.validation"}]
