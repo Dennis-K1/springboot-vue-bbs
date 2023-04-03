@@ -6,8 +6,9 @@
 (Servlet-JSP 관리자 웹 : https://github.com/Dennis-K1/servlet-jsp-bbs)
 <br>
 
-개발 기간: 3주 </br>
-개발 인원: 1명 </br>
+개발 기간: 
+3 주 </br>
+개발 인원: 1 명 </br><br>
 기술 스택:
 - 백엔드 &nbsp; &nbsp; &nbsp; &nbsp;: Java, SpringBoot, MyBatis, MariaDB
 - 프론트엔드 : Javascript, Vue3 (Composition Api), Axios 
@@ -41,7 +42,6 @@
   * [백엔드](#백엔드)
   * [프론트엔드](#프론트엔드)
 * [ERD](#ERD)
-* [마무리](#마무리)
 
 
 
@@ -92,6 +92,10 @@
 
 ### 백엔드 (SpringBoot)
 <img src="README_IMAGE/back_springboot_architecture.png" width="70%">
+
+> 클라이언트 요청을 필요한 경우 인터셉터에서 검증 후 컨트롤러로 전달하여, 컨트롤러는 서비스 (비즈니스 로직)
+와 매퍼 (DB) 를 통해 데이터를 취합하여 응답.
+> 에러가 있는 경우  GlobalExceptionHandler 에서 각 에러에 맞게 설정된 응답 반환.
 
 <br>
 
@@ -164,7 +168,8 @@
 ### 프론트엔드 (Vue)
 <img src="README_IMAGE/front_vue_architecture.png" width="70%">
 
-> 비즈니스 로직은 각 도메인 컴포저블로 관리
+> 탑 네비게이션 바와 푸터를 제외한 모든 컴포넌트는 router-view 에서 경로에 맞게 표시하며, 
+> 각 컴포넌트의 비즈니스 로직은 각 도메인 컴포저블로 관리.
 
 <br>
 
@@ -319,8 +324,215 @@ https://dennis-k1.github.io/springboot-vue-bbs/javadoc/
 <br>
 
 ### 백엔드
-### 프론트엔드
 
+#### GlobalExceptionHandler 예시
+<a href="https://github.com/Dennis-K1/springboot-vue-bbs/blob/main/src/main/java/com/bbs/exception/GlobalExceptionHandler.java">코드 링크</a>
+
+<details>
+<summary> 코드 보기/접기 </summary>
+
+```java
+/**
+ * 컨트롤러 에러 처리를 위한 핸들러
+ */
+@Slf4j
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+	/**
+	 * 제약 조건 위배 시 발생 (유효성 검사 실패)
+	 *
+	 * @param exception ConstraintViolationException
+	 * @return ResponseEntity status/body
+	 */
+	@ExceptionHandler(ConstraintViolationException.class)
+	protected ResponseEntity handleConstraintViolationException(ConstraintViolationException exception) {
+		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INVALID_PATH_VALUE, exception.getConstraintViolations());
+		return ResponseEntity
+			.status(ErrorCode.INVALID_INPUT_VALUE.getStatus())
+			.body(errorResponse);
+	}
+	
+	
+    ...SKIP...
+
+    
+	/**
+	 * 자체 정의 에러 발생 시 처리
+	 *
+	 * @param exception CustomException 을 상속하는 모든 자체 정의 에러
+	 * @return ResponseEntity status/body
+	 */
+	@ExceptionHandler({CustomException.class})
+	protected ResponseEntity handleCustomApiException(CustomException exception) {
+		ErrorCode errorCode = exception.getErrorCode();
+		ErrorResponse errorResponse = ErrorResponse.of(errorCode);
+		return ResponseEntity
+			.status(errorCode.getStatus())
+			.body(errorResponse);
+	}
+
+	/**
+	 * 상기 정의된 에러 외에 모든 에러에 대한 처리
+	 *
+	 * @param exception Exception
+	 * @return ResponseEntity status/body
+	 */
+	@ExceptionHandler({Exception.class})
+	protected ResponseEntity handleException(Exception exception) {
+		ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
+		return ResponseEntity
+			.status(ErrorCode.INTERNAL_SERVER_ERROR.getStatus())
+			.body(errorResponse);
+	}
+}
+
+```
+</details>
+
+#### Controller 예시
+
+<a href="https://github.com/Dennis-K1/springboot-vue-bbs/blob/main/src/main/java/com/bbs/controller/BoardController.java">코드 링크</a>
+
+<details>
+
+
+<summary> 코드 보기/접기</summary>
+
+```java
+// BoardController 'getArticle' 예시 :
+
+/**
+ * 게시글 상세 조회
+ *
+ * @param boardName 게시판명
+ * @param articleId 게시글 번호
+ * @return 게시글 정보
+ * @throws IOException
+ */
+@NoAuthentication
+@GetMapping("{boards}/{articleId}")
+public ApiResponse getArticle(
+@PathVariable("boards") @BoardName String boardName,
+@PathVariable("articleId") @Positive Long articleId) throws IOException {
+
+	Long boardId = boardNameMap.get(boardName);
+
+	boardService.increaseArticleViewsById(articleId);
+	Article article = boardService.getArticleById(articleId);
+	if (!Objects.equals(article.getBoardId(), boardId)) {
+	throw new ArticleNotMatchingBoardException();
+	}
+
+	setImageIfExists(article);
+	return ApiResponse.success(article);
+	}
+	
+```
+</details>
+
+
+
+<br>
+
+### 프론트엔드
+#### useBoard getArticle 예시
+
+<a href="https://github.com/Dennis-K1/springboot-vue-bbs/blob/main/vue/src/compositions/useBoard.js">useBoard 코드 링크</a>
+<a href="https://github.com/Dennis-K1/springboot-vue-bbs/blob/main/vue/src/components/boards/ArticleDetail.vue">articleDetail 코드 링크</a>
+
+<details>
+
+<summary> 코드 보기/접기</summary>
+
+```javascript
+  // userBoard
+
+  /**
+   * 게시판 상세 조회
+   *
+   * @param boardPath 게시판 경로
+   * @param articleId 게시글 번호
+   */
+  const getArticle = async (boardPath, articleId) => {
+    try {
+      const response = await apiClient.get(`${boardPath}/${articleId}`);
+      article.value = response.data.data;
+      user.value = response.data.data.user;
+    } catch (error) {
+      alert(error.response.data.message)
+      await router.go(-1);
+    }
+  }
+  
+  
+  // articleDetail getAticle 사용
+
+<template>
+  <main class="container">
+    <div v-if="boardPath !== 'inquiry'">
+      <NoticeDetail/>
+      <div v-if="boardPath === 'community'">
+        <CommunityReplyList/>
+      </div>
+    </div>
+    <div v-else-if="boardPath === 'inquiry'">
+      <InquiryDetail/>
+    </div>
+  </main>
+</template>
+
+<script>
+  
+  ...SKIP...
+  
+  export default {
+  name: "ArticleDetail",
+  components: {NoticeDetail, CommunityReplyList, InquiryDetail }
+}
+</script>
+<script setup>
+  import {useRoute} from "vue-router";
+  import {onMounted, provide, ref} from "vue";
+  import {useBoard} from "/@/compositions/useBoard.js";
+  
+  const route = useRoute();
+  /**
+  * article : 게시글 정보
+  * user : 유저 정보
+  * replyList : 게시글 댓글 목록
+  * getArticle : 게시글 조회
+  * getReply : 댓글 조회
+  */
+  const {article, user, replyList, getArticle, getReply} = useBoard();
+  
+  ...SKIP...
+  
+  /**
+  * 게시글 주입
+  */
+  provide('article', article);
+
+  ...SKIP...
+  
+  /**
+  * 마운트에 맞추어 데이터 조회
+  */
+  onMounted( async () => {
+  await getArticle(boardPath.value, articleId.value);
+  await getReply(articleId.value);
+});
+
+</script>
+
+```
+</details>
+
+#### vue-router 예시
+
+<a href="https://github.com/Dennis-K1/springboot-vue-bbs/blob/main/vue/src/router/router.js">router 코드 링크</a>
+
+<a href="https://github.com/Dennis-K1/springboot-vue-bbs/blob/main/vue/src/router/routes.js">routes 코드 링크</a>
 
 <hr>
 
@@ -346,11 +558,5 @@ https://dennis-k1.github.io/springboot-vue-bbs/javadoc/
   - 권한 번호와 권한명.
 
 
-
-
-
-
-
 <hr>
 
-## 마무리
