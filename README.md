@@ -14,12 +14,13 @@
 - 프론트엔드 : Javascript, Vue3 (Composition Api), Axios 
 - 배포 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;: GCP, Ubuntu
 
+<p float="left">
 <img src="https://img.shields.io/badge/JAVA-007396?style=for-the-badge&logo=java&logoColor=white">
 <img src="https://img.shields.io/badge/SPRING BOOT-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
 <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white">
 <img src="https://img.shields.io/badge/VUE-4FC08D?style=for-the-badge&logo=Vue.js&logoColor=white">
 <img src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white">
-
+</p>
 
 
 <br>테스트 링크: 
