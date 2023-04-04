@@ -2,7 +2,7 @@
 
 >  Spring Boot와 Vue를 활용한 SPA 멀티 게시판
 
-기존에 Servlet과 JSP를 활용하여 개발했던 멀티 게시판 MPA 관리자 웹을, 스프링 부트와 뷰로 재구성한  SPA 클라이언트 웹으로 기본적인 게시판 기능과 회원 기능을 갖고 있습니다.</br>
+기존에 Servlet과 JSP를 활용하여 개발했던 MPA 게시판 관리자 웹을 재구성한 SPA 클라이언트 웹으로 기본적인 게시판 기능과 회원 기능을 구현하였습니다..</br>
 (Servlet-JSP 관리자 웹 : https://github.com/Dennis-K1/servlet-jsp-bbs)
 <br>
 
@@ -13,6 +13,14 @@
 - 백엔드 &nbsp; &nbsp; &nbsp; &nbsp;: Java, SpringBoot, MyBatis, MariaDB
 - 프론트엔드 : Javascript, Vue3 (Composition Api), Axios 
 - 배포 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;: GCP, Ubuntu
+
+<img src="https://img.shields.io/badge/JAVA-007396?style=for-the-badge&logo=java&logoColor=white">
+<img src="https://img.shields.io/badge/SPRING BOOT-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
+<img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=white">
+<img src="https://img.shields.io/badge/VUE-4FC08D?style=for-the-badge&logo=Vue.js&logoColor=white">
+<img src="https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white">
+
+
 
 <br>테스트 링크: 
 - http://34.64.151.93/
